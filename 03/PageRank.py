@@ -29,6 +29,7 @@ edgeList = [] # list of Edge
 edgeHash = dict() # hash of edge to ease the match
 airportList = [] # list of Airport
 airportHash = dict() # hash key IATA code -> Airport
+P = []       # Initial PageRank vector
 
 def readAirports(fd):
     print "Reading Airport file from {0}".format(fd)
@@ -62,21 +63,21 @@ def readRoutes(fd):
         testCount = testCount + 1
         try:
             temp = line.split(',')
-            #if(testCount < 2):
-            #    print("Word: {}, Length: {}".format(temp[2], len(temp[2])))
             if (len(temp[2]) != 3 or len(temp[4]) != 3) :
                 raise Exception('One of the routes does not contain an IATA code')
             
             e.origin = temp[2]
             e.dest = temp[4]
 
+            # Update airport
+            airport = airportHash[e.origin]
+            airport.outweight += 1
+            airportHash[airport.code] = airport
+
             hashKey = e.origin + e.dest
 
             if(hashKey in edgeHash.keys()): 
             # If there already exists an edge from orig to dest
-                #oldEdge = edgeHash[hashKey]
-                #edgeList.remove(oldEdge) # TODO: Check this
-
                 e = edgeHash[hashKey]
                 e.weight = e.weight + 1
 
@@ -92,7 +93,6 @@ def readRoutes(fd):
 
                 # Add it
                 edgeHash[hashKey] = e
-                #edgeList.append(e)
                 cont += 1
 
         except Exception as inst:
@@ -104,12 +104,38 @@ def readRoutes(fd):
 
     print "There were {0} routes with IATA code".format(cont)
     #print edgeHash
-    print edgeList
+    #print edgeList
 
+
+def computeQ(P, n, i):
+    overallSum = 0
+    for j in range(0, n):
+        w_j_i = 0
+        airport_i = airportList[i]
+        airport_j = airportList[j]
+
+        edgeCode = airport_j.code + airport_i.code
+        if(edgeCode in edgeHash.keys()):
+            e = edgeHash[edgeCode]
+            w_j_i = e.weight
+
+        # Else Do nothing, weight is 0.        
+        overallSum += P[j] * w_j_i / airport_j.outweight
+
+    return overallSum
 
 def computePageRanks():
-    print(1)
-    # write your code
+    n = len(airportList)
+    L = 0.85        # Damping factor
+    P = [1/n] * n
+    it = 0
+    while(it < 10):  # TODO: Change this
+        Q = [0] * n
+        for i in range(0, n):
+            Q[i] = (L * computeQ(P, n, i)) + ((1 - L)/n)
+        P = Q
+    
+    return it
 
 def outputPageRanks():
     print(1)
@@ -118,10 +144,12 @@ def outputPageRanks():
 def main(argv=None):
     readAirports("airports.txt")
     readRoutes("routes.txt")
+
+    time1 = time.time()
+    iterations = computePageRanks()
+    time2 = time.time()
+    
     if(False):
-        time1 = time.time()
-        iterations = computePageRanks()
-        time2 = time.time()
         outputPageRanks()
         print "#Iterations:", iterations
         print "Time of computePageRanks():", time2-time1
