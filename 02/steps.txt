@@ -1,0 +1,79 @@
+https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-tokenizers.html
+
+
+1./ Index reloaded
+
+$ tail index_reloaded_out.csv 
+
+72018, that
+75338, is
+86895, in
+89701, i
+101602, and
+109645, a
+116338, of
+129544, to
+257648, the
+94048 Words
+
+
+2./
+
+With itself. Should give 1. Gives 1. OK
+
+$ python2.7 TFIDFViewer.py --index news --files ../files/20_newsgroups/soc.religion.christian/0015362 ../files/20_newsgroups/soc.religion.christian/0015362
+
+Similarity 1
+
+$ python2.7 TFIDFViewer.py --index news --files ../files/20_newsgroups/alt.atheism/0000181 ../files/20_newsgroups/soc.religion.christian/0015362
+
+Similarity = 0.46078
+
+The path is stored on elasticsearch and is then used on search_file_by_path() function to search for it. So we can assume it has been tokenized.
+
+
+The text score (^x) where x is a number determines how the output should be ranked.
+
+For example, if we compare the queries from the example, they return the same diff. 4 results but in different order, depending on whether we want to give more importance to the appearnce of the toronto word or the nyc one:
+
+------------------------------------------
+    …/LABS/02  python2.7 SearchIndexWeight.py --index news --nhits 5 --query toronto^2 nyc                     ✔ 
+['toronto^2', 'nyc']
+ID= _oAEOWYB-wYgzGzuGJJl SCORE=12.817256
+PATH= ../files/20_newsgroups/alt.atheism/0000574
+TEXT: In article <1r1mr8$eov@aurora.engr.LaTech.edu>, ra
+-----------------------------------------------------------------
+ID= IYAEOWYB-wYgzGzuEH4S SCORE=6.8231306
+PATH= ../files/20_newsgroups/sci.med/0013128
+TEXT: Here is a press release from the Natural Resources
+-----------------------------------------------------------------
+ID= doAEOWYB-wYgzGzuHqQz SCORE=6.744345
+PATH= ../files/20_newsgroups/talk.politics.misc/0018667
+TEXT: v140pxgt@ubvmsb.cc.buffalo.edu (Daniel B Case) wri
+-----------------------------------------------------------------
+ID= uYAEOWYB-wYgzGzuEYLz SCORE=5.0032635
+PATH= ../files/20_newsgroups/talk.politics.guns/0015998
+TEXT: Jim De Arras (jmd@cube.handheld.com) wrote:
+: > La
+-----------------------------------------------------------------
+4 Documents
+    …/LABS/02  python2.7 SearchIndexWeight.py --index news --nhits 5 --query toronto nyc^2                     ✔ 
+['toronto', 'nyc^2']
+ID= _oAEOWYB-wYgzGzuGJJl SCORE=14.549197
+PATH= ../files/20_newsgroups/alt.atheism/0000574
+TEXT: In article <1r1mr8$eov@aurora.engr.LaTech.edu>, ra
+-----------------------------------------------------------------
+ID= IYAEOWYB-wYgzGzuEH4S SCORE=7.745111
+PATH= ../files/20_newsgroups/sci.med/0013128
+TEXT: Here is a press release from the Natural Resources
+-----------------------------------------------------------------
+ID= uYAEOWYB-wYgzGzuEYLz SCORE=5.679333
+PATH= ../files/20_newsgroups/talk.politics.guns/0015998
+TEXT: Jim De Arras (jmd@cube.handheld.com) wrote:
+: > La
+-----------------------------------------------------------------
+ID= doAEOWYB-wYgzGzuHqQz SCORE=5.3463345
+PATH= ../files/20_newsgroups/talk.politics.misc/0018667
+TEXT: v140pxgt@ubvmsb.cc.buffalo.edu (Daniel B Case) wri
+----------------
+------------------------------------------

@@ -1,0 +1,23 @@
+# Query words removing those that contain weird characters
+# and order lexicographically.
+
+# we have also removed stopwords.
+
+python2.7 CountWordsModified.py --index novels --alpha > countWordsNovels.txt
+
+
+
+# Total num words 61823
+
+For heaps law we create  10 random subsets
+
+ python2.7 IndexFiles.py --index novels_subsets/
+
+
+ un cop trobat k i Beta
+ busquem d i N sobre tot novels
+
+
+
+Aplicar logs primer,
+despres log. lineal
