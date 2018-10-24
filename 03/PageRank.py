@@ -72,7 +72,6 @@ def readRoutes(fd):
             # Update airport
             airport = airportHash[e.origin]
             airport.outweight += 1
-            airportHash[airport.code] = airport
 
             hashKey = e.origin + e.dest
 
@@ -80,12 +79,7 @@ def readRoutes(fd):
             # If there already exists an edge from orig to dest
                 e = edgeHash[hashKey]
                 e.weight = e.weight + 1
-
-                # Reassign it and rewrite the obj. It is passed by value, not ref.
-                edgeHash[hashKey] = e
-                edgeList.append(e)
-
-
+                
             else:
                 # Not in edges list!
                 e.hashKey = hashKey
@@ -93,6 +87,7 @@ def readRoutes(fd):
 
                 # Add it
                 edgeHash[hashKey] = e
+                edgeList.append(e)
                 cont += 1
 
         except Exception as inst:
