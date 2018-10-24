@@ -5,22 +5,22 @@ import time
 import sys
 
 class Edge:
-    def __init__ (self, origin=None):
-        self.origin = origin # write appropriate value
+    def __init__ (self, origin=None, dest=None, hashKey=None):
+        self.origin = origin
+        self.dest = dest
+        self.hashKey = hashKey
         self.weight = 0 # write appropriate value
 
     def __repr__(self):
-        return "edge: {0} {1}".format(self.origin, self.weight)
-        
-    ## write rest of code that you need for this class
-
+        return "edge: {0} {1} {2}".format(self.origin, self.dest, self.weight)
+      
 class Airport:
     def __init__ (self, iden=None, name=None):
         self.code = iden
         self.name = name
         self.routes = []
         self.routeHash = dict()
-        self.outweight =    # write appropriate value
+        self.outweight = 0   # write appropriate value
 
     def __repr__(self):
         return "{0}\t{2}\t{1}".format(self.code, self.name, self.pageIndex)
@@ -54,23 +54,77 @@ def readAirports(fd):
 
 def readRoutes(fd):
     print "Reading Routes file from {0}".format(fd)
-    # write your code
+    routesTxt = open(fd, "r");
+    cont = 0
+    testCount = 0
+    for line in routesTxt.readlines():
+        e = Edge()
+        testCount = testCount + 1
+        try:
+            temp = line.split(',')
+            #if(testCount < 2):
+            #    print("Word: {}, Length: {}".format(temp[2], len(temp[2])))
+            if (len(temp[2]) != 3 or len(temp[4]) != 3) :
+                raise Exception('One of the routes does not contain an IATA code')
+            
+            e.origin = temp[2]
+            e.dest = temp[4]
+
+            hashKey = e.origin + e.dest
+
+            if(hashKey in edgeHash.keys()): 
+            # If there already exists an edge from orig to dest
+                #oldEdge = edgeHash[hashKey]
+                #edgeList.remove(oldEdge) # TODO: Check this
+
+                e = edgeHash[hashKey]
+                e.weight = e.weight + 1
+
+                # Reassign it and rewrite the obj. It is passed by value, not ref.
+                edgeHash[hashKey] = e
+                edgeList.append(e)
+
+
+            else:
+                # Not in edges list!
+                e.hashKey = hashKey
+                e.weight = 1
+
+                # Add it
+                edgeHash[hashKey] = e
+                #edgeList.append(e)
+                cont += 1
+
+        except Exception as inst:
+            pass
+       
+    routesTxt.close()
+    for key, value in edgeHash.iteritems():
+        edgeList.append(value)
+
+    print "There were {0} routes with IATA code".format(cont)
+    #print edgeHash
+    print edgeList
+
 
 def computePageRanks():
+    print(1)
     # write your code
 
 def outputPageRanks():
+    print(1)
     # write your code
 
 def main(argv=None):
     readAirports("airports.txt")
     readRoutes("routes.txt")
-    time1 = time.time()
-    iterations = computePageRanks()
-    time2 = time.time()
-    outputPageRanks()
-    print "#Iterations:", iterations
-    print "Time of computePageRanks():", time2-time1
+    if(False):
+        time1 = time.time()
+        iterations = computePageRanks()
+        time2 = time.time()
+        outputPageRanks()
+        print "#Iterations:", iterations
+        print "Time of computePageRanks():", time2-time1
 
 
 if __name__ == "__main__":
