@@ -23,7 +23,7 @@ class Airport:
         self.pageIndex = 0
 
     def __repr__(self):
-        return "{0}\t{2}\t{1}".format(self.code, self.name, self.pageIndex)
+        return "Code: {0}\t PageIdx:{2}\t Name: {1}".format(self.code, self.name, self.pageIndex)
 
 edgeHash = dict() # hash of edge to ease the match
 airportList = [] # list of Airport
@@ -77,7 +77,7 @@ def readRoutes(fd):
             edgeHash[hashKey] = e
             counter += 1
 
-            #Add route to airports
+            # Add route to airport of destination
             airportHash[e.dest].routes.append(e)
 
        
@@ -87,16 +87,13 @@ def readRoutes(fd):
 
 def computeSumDestVert(P, n, i):
     overallSum = 0
-    for j in range(0, n):
-        w_j_i = 0
-        airport_i = airportList[i]
-        airport_j = airportList[j]
 
-        edgeCode = airport_j.code + airport_i.code
-        if(edgeCode in edgeHash.keys()):
-            w_j_i  = edgeHash[edgeCode].weight
-
-        # Else Do nothing, weight is 0.        
+    # Iterate through routes that have i as destination
+    for e in airportList[i].routes:
+        j_code = e.origin
+        w_j_i  = e.weight
+        airport_j = airportHash.get(j_code)
+        j = airportList.index(airport_j)
         overallSum += P[j] * w_j_i / airport_j.outweight
 
     return overallSum
@@ -105,18 +102,26 @@ def computePageRanks():
     n = len(airportList)
     L = 0.85        # Damping factor
     P = [1/n] * n
-    it = 0
-    while(it < 10):  # TODO: Change this
+    it = 1
+    totalIt = 10
+    while(it <= 10):  # TODO: Change this
+        print("Progress iterations: {}/10".format(it))
+        print("{}{}{}".format('#'*it, ' ' * (totalIt - it), "||"))
         Q = [0] * n
         for i in range(0, n):
             Q[i] = (L * computeSumDestVert(P, n, i)) + ((1 - L)/n)
         P = Q
+        it += 1
     
+    # Assign pageranks
+    for i in range(0, n):
+        airportList[i].pageIndex = P[i]
+
     return it
 
 def outputPageRanks():
-    print(1)
-    # write your code
+    for a in airportList:
+        print(a)
 
 def main(argv=None):
     time1 = time.time()
@@ -124,19 +129,16 @@ def main(argv=None):
     readRoutes("routes.txt")
     time2 = time.time()
     print("Time of reading airports and routes:", time2-time1)
-    print("****************************************")
-    #print(airportHash
-    print("#########################################")
 
-
+    print("Computing pageRanks")
     time1 = time.time()
     iterations = computePageRanks()
     time2 = time.time()
     
-    if(False):
-        outputPageRanks()
-        print("#Iterations:", iterations)
-        print("Time of computePageRanks():", time2-time1)
+    outputPageRanks()
+    
+    print("#Iterations:", iterations)
+    print("Time of computePageRanks():", time2-time1)
 
 
 if __name__ == "__main__":
