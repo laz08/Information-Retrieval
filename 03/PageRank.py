@@ -123,6 +123,12 @@ def outputPageRanks():
     for a in airportList:
         print(a)
 
+
+def normalizeWeights():
+    for e in list(edgeHash.values()):
+        a = airportHash[e.origin]
+        e.weight = e.weight / a.outweight
+
 def main(argv=None):
     time1 = time.time()
     readAirports("airports.txt")
@@ -130,6 +136,8 @@ def main(argv=None):
     time2 = time.time()
     print("Time of reading airports and routes:", time2-time1)
 
+    normalizeWeights()
+    
     print("Computing pageRanks")
     time1 = time.time()
     iterations = computePageRanks()
