@@ -32,8 +32,9 @@ P = []       # Initial PageRank vector
 
 def readAirports(fd):
     print("Reading Airport file from {0}".format(fd))
-    airportsTxt = open(fd, "r");
+    airportsTxt = open(fd, "r", encoding="utf8")
     cont = 0
+    noncount = 0
     for line in airportsTxt.readlines():
         a = Airport()
         try:
@@ -43,14 +44,33 @@ def readAirports(fd):
             a.name=temp[1][1:-1] + ", " + temp[3][1:-1]
             a.code=temp[4][1:-1]
         except Exception as inst:
+            noncount +=1
             pass
         else:
+            # see comment below about this check
+            if a.code in airportHash.keys():
+                """
+                print(a.code)
+                    BFT
+                    ZYA
+                """
+                continue
             cont += 1
             airportList.append(a)
             airportHash[a.code] = a
     airportsTxt.close()
     print("There were {0} Airports with IATA code".format(cont))
-
+    print("There were {0} Airports records with non an IATA code".format(noncount))
+    print("Length of airportHash  {0} ".format(len(airportHash)))
+    print("Length of airportList  {0} ".format(len(airportList)))
+    """
+    from the statistics below we can see that that 2 records appear twice
+    after adding the condition to exclude IATA we find those 2 records that appear twice.
+    There were 5740 Airports with IATA code
+    There were 1923 Airports records with non an IATA code
+    Length of airportHash  5738
+    Length of airportList  5740
+    """
 
 def readRoutes(fd):
     print("Reading Routes file from {0}".format(fd))
@@ -104,7 +124,7 @@ def computePageRanks():
     P = [1/n] * n
     it = 1
     totalIt = 10
-    while(it <= 10):  # TODO: Change this
+    while(it <= 1):  # TODO: Change this
         print("Progress iterations: {}/10".format(it))
         print("{}{}{}".format('#'*it, ' ' * (totalIt - it), "||"))
         Q = [0] * n
@@ -143,7 +163,7 @@ def main(argv=None):
     iterations = computePageRanks()
     time2 = time.time()
     
-    outputPageRanks()
+    #outputPageRanks()
     
     print("#Iterations:", iterations)
     print("Time of computePageRanks():", time2-time1)
