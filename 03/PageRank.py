@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from collections import namedtuple
+import argparse
 import time
 import sys
 
@@ -28,7 +29,7 @@ class Airport:
 edgeHash = dict() # hash of edge to ease the match
 airportList = [] # list of Airport
 airportHash = dict() # hash key IATA code -> Airport
-P = []       # Initial PageRank vector
+#P = []       # Initial PageRank vector
 
 def readAirports(fd):
     print("Reading Airport file from {0}".format(fd))
@@ -78,7 +79,8 @@ def readRoutes(fd):
     counter = 0
     for line in routesTxt.readlines():
         temp = line.split(',')
-        
+        if len(temp) < 4:
+            continue
         e = Edge()
         e.origin = temp[2]
         e.dest = temp[4]
@@ -114,7 +116,10 @@ def computeSumDestVert(P, n, i):
         w_j_i  = e.weight
         airport_j = airportHash.get(j_code)
         j = airportList.index(airport_j)
-        overallSum += P[j] * w_j_i / airport_j.outweight
+        #print("j_code = {0}, wji = {1}, airport_j = {2} , j= {3}, airport_j.outweight = {4}".format(j_code, w_j_i, airport_j, j, airport_j.outweight))
+        overallSum += P[j] * w_j_i #/ airport_j.outweight
+        #print("overallSum = {0}".format(overallSum))
+
 
     return overallSum
 
@@ -124,13 +129,21 @@ def computePageRanks():
     P = [1/n] * n
     it = 1
     totalIt = 10
-    while(it <= 1):  # TODO: Change this
-        print("Progress iterations: {}/10".format(it))
+    while(it <= totalIt):  # TODO: Change this
+        print("Progress iterations: {0}/{1}".format(it, totalIt))
         print("{}{}{}".format('#'*it, ' ' * (totalIt - it), "||"))
         Q = [0] * n
         for i in range(0, n):
             Q[i] = (L * computeSumDestVert(P, n, i)) + ((1 - L)/n)
+
+        diff = 0
+        #print("P = {}".format(P[:10]))
+        #print("Q = {}".format(Q[:10]))
+        for i in range(0, n):
+            diff = diff + (Q[i] - P[i])**2
+        print("Converge factor - sum((Q[i] - P[i])**2): {}".format(diff))
         P = Q
+
         it += 1
     
     # Assign pageranks
@@ -140,8 +153,11 @@ def computePageRanks():
     return it
 
 def outputPageRanks():
+    totalPR = 0
     for a in airportList:
         print(a)
+        totalPR += a.pageIndex
+    print("total PR = {0}".format(totalPR))
 
 
 def normalizeWeights():
@@ -150,9 +166,20 @@ def normalizeWeights():
         e.weight = e.weight / a.outweight
 
 def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test', default=False, action='store_true', help='run test case')
+    parser.add_argument('--print', default=False, action='store_true', help='Print pageRank results')
+
+    args = parser.parse_args()
+
     time1 = time.time()
-    readAirports("airports.txt")
-    readRoutes("routes.txt")
+    if args.test:
+        readAirports("airports_test.txt")
+        readRoutes("routes_test.txt")
+    else:
+        readAirports("airports.txt")
+        readRoutes("routes.txt")
+
     time2 = time.time()
     print("Time of reading airports and routes:", time2-time1)
 
@@ -162,8 +189,8 @@ def main(argv=None):
     time1 = time.time()
     iterations = computePageRanks()
     time2 = time.time()
-    
-    #outputPageRanks()
+    if args.print:
+        outputPageRanks()
     
     print("#Iterations:", iterations)
     print("Time of computePageRanks():", time2-time1)
