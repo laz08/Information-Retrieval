@@ -151,7 +151,7 @@ def computePageRanks():
             diff = diff + (Q[i] - P[i])**2
         print("Converge factor - sum((Q[i] - P[i])**2): {}".format(diff))
         
-        p = (pageRankNoOutDegrees * p_no_outdegree) + ((1 - L)/n)
+        p_no_outdegree = (pageRankNoOutDegrees * p_no_outdegree) + ((1 - L)/n)
         P = Q
         it += 1
 
