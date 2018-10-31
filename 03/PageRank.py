@@ -4,7 +4,7 @@ from collections import namedtuple
 import argparse
 import time
 import sys
-
+import cProfile
 class Edge:
     def __init__ (self, origin=None, dest=None):
         self.origin = origin
@@ -117,16 +117,24 @@ def computeSumDestVert(P, n, i):
         airport_j = airportHash.get(j_code)
         j = airportList.index(airport_j)
         #print("j_code = {0}, wji = {1}, airport_j = {2} , j= {3}, airport_j.outweight = {4}".format(j_code, w_j_i, airport_j, j, airport_j.outweight))
-        overallSum += P[j] * w_j_i #/ airport_j.outweight
+        overallSum += P[j] * w_j_i / airport_j.outweight
         #print("overallSum = {0}".format(overallSum))
 
 
     return overallSum
 
 def computePageRanks():
+
     n = len(airportList)
     L = 0.85        # Damping factor
     P = [1/n] * n
+
+    aOutdegreeZero = filter(lambda a: a.outweight == 0, airportList)
+    aOutdegreeZero = len(list(aOutdegreeZero))
+    print("Outdegree zero: {}".format(aOutdegreeZero))
+    pageRankNoOutDegrees = (L * aOutdegreeZero/ n)
+
+    p_no_outdegree = 1/n
     it = 1
     totalIt = 10
     while(it <= totalIt):  # TODO: Change this
@@ -134,7 +142,7 @@ def computePageRanks():
         print("{}{}{}".format('#'*it, ' ' * (totalIt - it), "||"))
         Q = [0] * n
         for i in range(0, n):
-            Q[i] = (L * computeSumDestVert(P, n, i)) + ((1 - L)/n)
+            Q[i] = (L * computeSumDestVert(P, n, i)) + ((1 - L)/n) + (pageRankNoOutDegrees * p_no_outdegree)
 
         diff = 0
         #print("P = {}".format(P[:10]))
@@ -142,9 +150,12 @@ def computePageRanks():
         for i in range(0, n):
             diff = diff + (Q[i] - P[i])**2
         print("Converge factor - sum((Q[i] - P[i])**2): {}".format(diff))
+        
+        p = (pageRankNoOutDegrees * p_no_outdegree) + ((1 - L)/n)
         P = Q
-
         it += 1
+
+
     
     # Assign pageranks
     for i in range(0, n):
@@ -183,7 +194,7 @@ def main(argv=None):
     time2 = time.time()
     print("Time of reading airports and routes:", time2-time1)
 
-    normalizeWeights()
+    #normalizeWeights()
     
     print("Computing pageRanks")
     time1 = time.time()
@@ -197,4 +208,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    #cProfile.run("main()")
     sys.exit(main())
