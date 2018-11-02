@@ -29,6 +29,7 @@ class Airport:
 edgeHash = dict() # hash of edge to ease the match
 airportList = [] # list of Airport
 airportHash = dict() # hash key IATA code -> Airport
+epsilon = 1e-8
 #P = []       # Initial PageRank vector
 
 def readAirports(fd):
@@ -123,7 +124,7 @@ def computeSumDestVert(P, n, i):
 
     return overallSum
 
-def computePageRanks():
+def computePageRanks(convergeFlag):
 
     n = len(airportList)
     L = 0.85        # Damping factor
@@ -137,7 +138,8 @@ def computePageRanks():
     p_no_outdegree = 1/n
     it = 1
     totalIt = 10
-    while(it <= totalIt):  # TODO: Change this
+    diff = 1
+    while((it <= totalIt or convergeFlag) and (diff > epsilon or not convergeFlag)):
         print("Progress iterations: {0}/{1}".format(it, totalIt))
         print("{}{}{}".format('#'*it, ' ' * (totalIt - it), "||"))
         Q = [0] * n
@@ -170,16 +172,30 @@ def outputPageRanks():
         totalPR += a.pageIndex
     print("total PR = {0}".format(totalPR))
 
+def outputPageRanksSorted():
+    totalPR = 0
+    sortedAirports = sorted(airportList, key=lambda pgr: pgr.pageIndex, reverse=True)
+    for a in sortedAirports:
+        print(a)
+        totalPR += a.pageIndex
+    print("total PR = {0}".format(totalPR))
 
 def normalizeWeights():
     for e in list(edgeHash.values()):
         a = airportHash[e.origin]
         e.weight = e.weight / a.outweight
 
+def maxWeight():
+    maxw = max(airportList, key=lambda a: a.outweight)
+    print("Airport "+maxw.code+" has max outwieght : " + "{}".format(maxw.outweight))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--test', default=False, action='store_true', help='run test case')
+    parser.add_argument('--converge', default=False, action='store_true', help='Change the algorithm to run until converge')
     parser.add_argument('--print', default=False, action='store_true', help='Print pageRank results')
+    parser.add_argument('--printSort', default=False, action='store_true', help='Print pageRank results sorted by pageRank value')
 
     args = parser.parse_args()
 
@@ -198,11 +214,13 @@ def main(argv=None):
     
     print("Computing pageRanks")
     time1 = time.time()
-    iterations = computePageRanks()
+    iterations = computePageRanks(args.converge)
     time2 = time.time()
     if args.print:
         outputPageRanks()
-    
+    if args.printSort:
+        outputPageRanksSorted()
+    maxWeight()
     print("#Iterations:", iterations)
     print("Time of computePageRanks():", time2-time1)
 
