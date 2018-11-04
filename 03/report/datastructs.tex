@@ -1,23 +1,27 @@
 \begin{figure}[h]
     \centering
-\begin{tikzpicture}
-\begin{class}[text width =7 cm]{ Airport }{0 ,0}
-\attribute {code : IATA airport code }
-\attribute {name : Airport name }
-\attribute {routes : List of all arrivals}
-\attribute {outweight : number of departure flights}
-\attribute {pageIndex : Page-rank index}
-\operation {\_\_repr\_\_: stringify the class }
-\end{class}
-\end{tikzpicture}
-\hspace{4pt}
-\begin{tikzpicture}
-\begin{class}[text width =6 cm]{Edge}{0 ,0}
-\attribute {origin : Origin airport }
-\attribute {dest : Destination airport }
-\operation {\_\_repr\_\_: stringify the class }
-\end{class}
-\end{tikzpicture}
+    \begin{tikzpicture}
+    \begin{class}[text width = 5cm]{ Airport }{0 ,0}
+        \attribute {\textbullet \  \textbf{\underline{code}}: String}
+        \attribute {\textbullet \ \textbf{name}: String}
+        \attribute {\textbullet \ \textbf{routes}: Array \textless Airports\textgreater}
+        \attribute {\textbullet \ \textbf{outweight}: Integer}
+        \attribute {\textbullet \ \textbf{pageIndex}: Double}
+        \operation {\textbf{+ \ \_\_repr\_\_()} }
+    \end{class}
+    \end{tikzpicture}
+
+    \hspace{5pt}
+
+    \begin{tikzpicture}
+    \begin{class}[text width = 4cm]{Route}{0 ,0}
+        \attribute {\textbullet \  \textbf{\underline{origin}}: Airport }
+        \attribute {\textbullet \  \textbf{\underline{dest}}: Airport }
+        \operation {\textbf{+ \ \_\_repr\_\_()} }
+    \end{class}
+    \end{tikzpicture}
+
 \caption{Class diagrams}
 \label{fig:uml}
+
 \end{figure}

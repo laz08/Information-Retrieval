@@ -1,4 +1,9 @@
-\documentclass{article}
+\documentclass[10pt, a4paper]{article}
+
+%Margins
+%\usepackage[a4paper, total={6in, 9in}]{geometry}
+
+
 \usepackage[utf8]{inputenc}
 \usepackage[a4paper]{geometry}
 \usepackage{enumitem}
@@ -15,6 +20,7 @@
 \usepackage{pgf, tikz}
 \usepackage[simplified]{pgf-umlcd}
 \usepackage{hyperref}
+\usepackage{ amssymb }
 
 \hypersetup{
     colorlinks=true,
@@ -25,40 +31,116 @@
  
 \urlstyle{same}
 
+% Cool paragraphs without forcing them with //
+\edef\restoreparindent{\parindent=\the\parindent\relax}
+\usepackage[parfill]{parskip}
+\restoreparindent
 
+% Remove space on itemize items.
+\setlist{nolistsep}
+
+
+% Headings of each page
 \pagestyle{fancy}
-\lhead{Laura Cebollero Ruiz}
-\rhead{Asaf Badouh}
+\lhead{Asaf Badouh}
+\rhead{Laura Cebollero}
 \cfoot{Page \thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
-\title{Information Retrieval\\Lab 03 - Page-Rank}
 
-\author{Asaf Badouh \\Laura Cebollero Ruiz }
-\date{November 2018}
+%%%%%%%%%%%%%%%%%%%%%
+%%%% Doc info %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
+\title{ \Large  Information Retrieval \\ Lab 03 \\ \huge \textbf{Page-Rank implementation}}
+
+\author{\textsc{Badouh, Asaf} \\ \textsc{Cebollero, Laura }}
+\date{6th of November, 2018}
+
+%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
+
+% Remove page numbering on cover
+\pagenumbering{gobble}
 
 \maketitle
 \begin{figure}[b!]
     \centering
     \includegraphics[width=\linewidth]{openflights-apdb-2048.png}
 \end{figure}
+
+
 \newpage
+
+% Restore page numbering after cover!
+\pagenumbering{Roman}
+
 \section{Introduction}
-In this lab we want to compute the page rank of airports using the network defined by routes from and to airports. For that, we used the supplied data downloaded from  \href{https://openflights.org/data.html}{\textit{Open flights}}\footnote{More details about the data structure can be found in the lab:  \href{http://www.cs.upc.edu/~ir-miri/labs/session3.zip}{Session03}}:
+In this lab we want to compute the page rank of airports using the network defined by routes from and to airports. For that, we used the supplied data downloaded from  \href{https://openflights.org/data.html}{\textit{Open flights}}\footnote{More details about the data structure can be found in the lab:  \href{http://www.cs.upc.edu/~ir-miri/labs/session3.zip}{Session03}}, which has been provided to us:
 \begin{itemize}
     \itemsep-0.5em 
-    \item {\fontfamily{qcr}\selectfont airport.txt} - contains a list of airports (nodes) from the world.
-    \item {\fontfamily{qcr}\selectfont routes.txt} - contains a list of routes (edges) from the world.
+    \item {\fontfamily{qcr}\selectfont airport.txt} - contains a list of airports (\textbf{nodes}) from the world.
+    \item {\fontfamily{qcr}\selectfont routes.txt} - contains a list of routes (\textbf{edges}) from the world.
 \end{itemize}
-As explained in the lab, we can represent this information as a graph, where airports are nodes and routes are edges. The weights of the edges will be the number of flights between two airports. Airports with high PageRank value are \textit{important} airports. This is crucial information when designing and reforming airport as it means that many flights (with passengers and goods) pass it. Optimizing the operation of such airport, will lead to improvement of many supply chains and other visitors.
+As explained in the lab statement, we can represent this information as a graph, where airports are nodes and routes are edges. The \textbf{weights of the edges }will be the \textbf{number of flights between two airports}. Thus, \textbf{airports} with a \textbf{high PageRank} value are \textbf{\textit{important} airports}. 
+
+This is crucial information for example when designing and reforming airports, as it means that many flights (either with passengers or goods) visit it when landing or taking off. In other words, they may be affected by such remodellings. 
+
+Optimizing the operations of such important airports will lead to improvement of many supply chains and other visitors.
 
 \section{Implementation Scheme}
+Having described and seen the problem at hand, we will focus now on how the implementation of the airport has been done. We have chosen to stick to \textsc{Python} for this project.
+
+Since some base code has been provided to us, we will focus mainly on two aspects:
+\begin{itemize}
+    \item The \textbf{data structures} we have settled on after implementation for both the nodes and edges.
+    \item The \textbf{difficulties} we have faced, as well as the \textbf{decisions} taken to afront them.
+\end{itemize}
+
 \subsection{Data Structures}
-While analyzing {\fontfamily{qcr}\selectfont airport.txt} we found $7,663$ airport records. $1,923$ of them don't have IATA code, $2$ of them appear twice which leave us with $5,738$ "valid" airports. Representing the problem in two-dimensional array (matrix) will consume $~2^{25}\times sizeof(datatype)$ bytes. Since the max weight is $534$ (ORD - Chicago Ohare Intl, United States) our datatype must be at least 2-bytes, i.e. total of 64 Mega-Bytes. Since the matrix is very sparse, in order to save data space\footnote{In fact, 64MB it is not too big, It might be better to save the data as matrix in order to save data manipulation.}, we decides to save the information in two dictionaries, one for each, airport and routes (see figure.\ref{fig:uml}) 
+As described on the introduction, there are only two main data structures:
+\begin{itemize}
+    \item The nodes, which act as Airports.
+    \item The edges, which represents the \textit{directed} routes between two airports.
+\end{itemize}
+
+To create the nodes we have read them from the file {\fontfamily{qcr}\selectfont airport.txt}.
+
+While analyzing it and creating our data structure, we have found a total of $7,663$ airport records. However, we have found some special cases:
+\begin{enumerate}
+    \item From the total, $1,923$ of them don't have IATA code, which is what we are using as an identifier for the airport.
+    \item There is an airport that appears twice, so it is listed $2$ times on the file.
+\end{enumerate}
+
+To avoid having duplicates and working with airports with a missing identifier, we have discarded them. \textbf{This has left us  with a total $5,738$ \textit{valid} airports}. 
+
+If we were to represent the problem in a two-dimensional array, that is, a matrix, it would consume a large size of bytes. Namely:  $$size = \thicksim 2^{25}\times sizeof(datatype)$$
+
+Since the maximum weight found is $534$ (ORD - Chicago Ohare Intl, United States) our datatype must be at least 2-bytes, \textit{i.e. total of 64 Mega-Bytes}. 
+
+This hypothetic \textbf{matrix would be very sparse}, so in order to save data space \footnote{In fact, 64MB is not that big nowadays, in efficiency terms it might even be better to save the data as matrix in order to save data manipulation and random accesses. Nevertheless, we have chosen to stick to the skeleton structures provided.}, we have decided to save the information in two dictionaries, one for each structure: airports and routes.
+
+Below, in figure \ref{fig:uml}, you can see how the structures have ended up being defined. 
 \input{datastructs.tex}
+
+Each attribute of the \textbf{airport} consists of:
+\begin{itemize}
+    \item \textbf{code}: IATA airport code. Identifier of the airport.
+    \item \textbf{name}: Airport name.
+    \item \textbf{routes}: List of all airports that have a route that points to the current airport. In other words, list of airports that have as a destination this airport.
+    \item \textbf{outweight}: Number of departure flights from this airport.
+    \item \textbf{pageIndex}: Page-rank index.
+\end{itemize}
+
+As for the Route structure, its structure is way simpler:
+\begin{itemize}
+    \item \textbf{Origin}: The airport from where the flight takes off.
+    \item \textbf{Dest}: The destination airport, where the flight will land on.
+\end{itemize}
+
+
+The \texttt{repr} function in both structures just defines how the airport and route should be defined.
 
 \subsection{Difficulties and Choices}
 \noindent\fbox{%
