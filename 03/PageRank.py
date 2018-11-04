@@ -5,6 +5,8 @@ import argparse
 import time
 import sys
 import cProfile
+import matplotlib.pyplot as plt
+
 class Edge:
     def __init__ (self, origin=None, dest=None):
         self.origin = origin
@@ -31,6 +33,7 @@ airportList = [] # list of Airport
 airportHash = dict() # hash key IATA code -> Airport
 epsilon = 1e-8
 #P = []       # Initial PageRank vector
+diffP = []
 
 def readAirports(fd):
     print("Reading Airport file from {0}".format(fd))
@@ -117,9 +120,7 @@ def computeSumDestVert(P, n, i):
         w_j_i  = e.weight
         airport_j = airportHash.get(j_code)
         j = airportList.index(airport_j)
-        #print("j_code = {0}, wji = {1}, airport_j = {2} , j= {3}, airport_j.outweight = {4}".format(j_code, w_j_i, airport_j, j, airport_j.outweight))
         overallSum += P[j] * w_j_i / airport_j.outweight
-        #print("overallSum = {0}".format(overallSum))
 
 
     return overallSum
@@ -156,8 +157,7 @@ def computePageRanks(convergeFlag):
         p_no_outdegree = (pageRankNoOutDegrees * p_no_outdegree) + ((1 - L)/n)
         P = Q
         it += 1
-
-
+        diffP.append(diff)
     
     # Assign pageranks
     for i in range(0, n):
@@ -180,15 +180,16 @@ def outputPageRanksSorted():
         totalPR += a.pageIndex
     print("total PR = {0}".format(totalPR))
 
-def normalizeWeights():
-    for e in list(edgeHash.values()):
-        a = airportHash[e.origin]
-        e.weight = e.weight / a.outweight
-
 def maxWeight():
     maxw = max(airportList, key=lambda a: a.outweight)
     print("Airport "+maxw.code+" has max outwieght : " + "{}".format(maxw.outweight))
 
+def plotDiffP():
+    plt.plot(diffP, 'ro', diffP)
+    plt.ylabel("Convergence factor")
+    plt.xlabel("Iterations")
+    plt.axis([0, 13, 0, 0.00055])
+    plt.show()
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
@@ -196,6 +197,7 @@ def main(argv=None):
     parser.add_argument('--converge', default=False, action='store_true', help='Change the algorithm to run until converge')
     parser.add_argument('--print', default=False, action='store_true', help='Print pageRank results')
     parser.add_argument('--printSort', default=False, action='store_true', help='Print pageRank results sorted by pageRank value')
+    parser.add_argument('--plot', default=False, action='store_true', help='Plot diff P values')
 
     args = parser.parse_args()
 
@@ -210,8 +212,6 @@ def main(argv=None):
     time2 = time.time()
     print("Time of reading airports and routes:", time2-time1)
 
-    #normalizeWeights()
-    
     print("Computing pageRanks")
     time1 = time.time()
     iterations = computePageRanks(args.converge)
@@ -220,6 +220,8 @@ def main(argv=None):
         outputPageRanks()
     if args.printSort:
         outputPageRanksSorted()
+    if args.plot:
+        plotDiffP()
     maxWeight()
     print("#Iterations:", iterations)
     print("Time of computePageRanks():", time2-time1)

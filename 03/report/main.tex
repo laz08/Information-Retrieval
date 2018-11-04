@@ -21,6 +21,7 @@
 \usepackage[simplified]{pgf-umlcd}
 \usepackage{hyperref}
 \usepackage{ amssymb }
+\usepackage{listings}
 
 \hypersetup{
     colorlinks=true,
@@ -142,26 +143,113 @@ As for the Route structure, its structure is way simpler:
 
 The \texttt{repr} function in both structures just defines how the airport and route should be defined.
 
-\subsection{Difficulties and Choices}
-\noindent\fbox{%
-    \parbox{\textwidth}{%
-        \textcolor{red}{Laura!! I tried here to answer this question from the lab:} Modify the pseudocode above to add the effect of these (virtual) edges efficiently: how many of them are there, and how much pagerank do they add in total to each vertex in particular?
-    }%
-}
-Our main difficulty was dealing with the \textit{airports} without departures(formally, \textit{dangling nodes}). There are three accepted approaches for treating pages with no outgoing links\cite{pageRank}:
+\section{Difficulties and decisions taken}
+
+Implementing the code and understanding the algorithm was pretty straightforward.
+
+However, we have faced several problems:
+\begin{itemize}
+    \item \textbf{Duplication of airports as well as airports without IATA code.} This has been thoroughly explained in the Implementation section.
+    \item \textbf{Treatment of dangling nodes}. That is, treatment of airports that are acting as destinations, but not as origin of routes, resulting in $outweight = 0$.
+    \item \textbf{Pagerank for dangling nodes}. Somewhat affected by the second point.
+    item \textbf{Proper number of iterations. Convergence.} 
+\end{itemize}
+
+\subsection{Dangling nodes}
+Our main difficulty was dealing with the \textit{airports} without departures, that is, the dangling nodes.
+
+There are three accepted approaches for treating nodes with no outgoing edges\cite{pageRank}:
 \begin{enumerate}
-    \item Eliminate such pages from the graph (iteratively prune the graph until reaching a steady state).
-    \item Consider such pages to link back to the pages that link to them.
-    \item Consider such pages to link to all web pages (effectively making an exit out of them equivalent to a random jump).
+    \item \textbf{Eliminate} such nodes from the graph (iteratively prune the graph until reaching a steady state). 
+    \item Consider such nodes to\textbf{ link back} to the nodes that link to them.
+    \item Consider such nodes to \textbf{link to all the other nodes} (effectively making an exit out of them equivalent to a random jump).
 \end{enumerate}
-The first approach can lead to loss of information. consider the graph in figure[\ref{graph:s0}] that represent our network, we can see that we can lose information about airports. The second and third approaches are more robust and promise that we will not lose information, we decided to add link to all nodes \textcolor{red}{(TRUE??)}. However, we don't keep it on the data structure itself, we add it to the iterative computation of the page-rank, therefore we won't "pay" for $n^2$ new edges.
+
+The first approach can lead to loss of information. Consider the graph in figure [\ref{graph:s0}] that represents our network. If we prune the graph after 2 iterations we can see that we have lost a lot of information, namely in this case a \textbf{total of 3 airports}. So we have discarded this option.
+
 \input{approachOne.tex}
 
-\section{Experiments and Observations}
-different dumping factors
-about the converges parameter
-other?
+The second and third approaches are more robust and ensure not losing information.
 
+However, applying the second option would be creating false routes that are, in fact, not real, since the graph is directed for a reason: taking into account the direction of routes. In other words, by applying it  we would be biasing the data too much by creating new routes that do not exist, thus the resulting pagerank would be incorrect.
+
+This leaves us with the third option, which is the more reasonable one  with the problem at hand.  W\textbf{e have decided to add edges to all the disconnected nodes to take into account random jumps} (for example, changing the route when doing an scale in an airport). 
+
+However, we don't keep this new edges on the data structure itself, but we have instead added it to the iterative computation of the pagerank algorithm. Therefore, effectively not having to store  $n^2$ new edges, where $n$ is the number of dangling nodes.
+
+\subsection{Pagerank for dangling nodes}
+Although normalizing weights by itself was not difficult for the \textit{normal} nodes (i.e. nodes that were not dangling), we had to consider how to compute the pagerank for the dangling nodes taking them as a special case on each iteration.
+
+This ended up by treating their pagerank separately with the well-connected ones:
+\begin{enumerate}
+    \item Let $d$ be the number of dangling nodes. That is, the nodes with outweight 0.
+    \item Let $n$ be the total number of nodes.
+    \item $prDangNodes = L * \frac{d}{n}$
+    \item $evDangNodes = \frac{1}{n}$
+    \item for each iteration
+    \begin{itemize}
+        \item $evDangNodes = prDangNodes * evDangNodes + \frac{1 - L}{n}$
+    \end{itemize}
+\end{enumerate}
+
+
+\section{Experiments}
+The last step of this project has been performing some experiments.
+
+\subsection{Convergence}
+During the implementation of this project, we started with a small number of iterations: only 10.
+
+After ensuring that the pagerank algorithm was working correctly, we then addressed the suggestion of using a convergence parameter to act as a flag to stop computing the pagerank after reaching a threshold in terms of difference between one pagerank vector $P$ and the new computed one.
+
+The threshold stablished is of value  $1e^{-8}$.  This convergence has led us to a total of 14 iterations.
+
+If we check the convergence factor for each iteration, tho, we can see that we are working with very small units:
+
+\begin{center}
+        \includegraphics[width=0.75\linewidth]{plot_conv.png}
+        \captionof{figure}{Convergence factor diff. for each iteration}
+\end{center}
+
+
+\subsection{Different dumping factors}
+
+TODO
+
+\subsection{Efficiency}
+As a side not, we have noticed that our algorithm is not as fast as we would like it to. With the convergence flag (thus, 14 iterations) it takes a total (on average) of 13 seconds. Almost a second per iteration!
+
+Using the library \texttt{cProfile} we have pinpointed our problem: using the structure provided by the problem, 
+we have a bottleneck in times of execution when computing the overall sum of the pagerank for a given airport. 
+
+For context:
+
+\begin{lstlisting}[language=Python,  breaklines=true, numbers=left,   frame=single]
+def computeSumDestVert(P, n, i):
+    overallSum = 0
+
+    # Iterate through routes that have i as destination
+    for e in airportList[i].routes:
+        j_code = e.origin
+        w_j_i  = e.weight
+        airport_j = airportHash.get(j_code)
+        j = airportList.index(airport_j)
+        overallSum += P[j] * w_j_i / airport_j.outweight
+\end{lstlisting}
+
+In line 9 we have the bottleneck. We are getting the index of an airport to specify its position on the vector of pageranks $P$. However, to get this index we need the whole object, which is what we are retrieving on line 8.
+
+This is caused by the structure used. If we were to use an adjacency matrix, since we would be working with indexes directly, this problem could be avoided.
+
+Although the bottleneck is minimal with the current data, for future work it would be useful to reimplement this part using a more efficient structure or strategy.
+
+\section{Conclusions}
+The conclusions we have arrived to after doing this project are manifold:
+\begin{itemize}
+    \item The iterative algorithm for pagerank is effective and somewhat efficient for the data at hand. A future work we could work on would be on its scalability: how efficient would it be with a billion nodes and million nodes? For example.
+    \item \textbf{Dangling nodes have to be taken into account} and affect a lot pagerank. We didn't take them into account on our first pagerank computations and thus, the sum of all pageranks did not amount to 1. 
+    \item Choosing an adhient solution for the dangling nodes should be top priority. In our case since the number of nodes was not that large we could opt for the solution of linking all nodes. However, there may be easier cases (computationally speaking) where linking back the nodes to the ones they are coming makes sense.
+    \item Using a convergence of $1e^{-8}$ leads in our case to a total number of 14 iterations, which is not that far from what we started on: 10 iterations.
+\end{itemize}
 
 \newpage
 \nocite{*}
