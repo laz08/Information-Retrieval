@@ -203,7 +203,7 @@ After ensuring that the pagerank algorithm was working correctly, we then addres
 
 The threshold stablished is of value  $1e^{-8}$.  This convergence has led us to a total of 14 iterations.
 
-If we check the convergence factor for each iteration, tho, we can see that we are working with very small units:
+If we check the convergence factor for each iteration, with a static damping factor of 0.85, we can see that we are working with very small units:
 
 \begin{center}
         \includegraphics[width=0.75\linewidth]{plot_conv.png}
