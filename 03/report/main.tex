@@ -230,9 +230,9 @@ Although the bottleneck is minimal with the current data, for future work it wou
 \section{Conclusions}
 The conclusions we have arrived to after doing this project are manifold:
 \begin{itemize}
-    \item The iterative algorithm for pagerank is effective and somewhat efficient for the data at hand. A future work we could work on would be on its scalability: how efficient would it be with a billion nodes and million nodes? For example.
+    \item The iterative algorithm for pagerank is effective and somewhat efficient for the data at hand. A future work could check the scalability: how efficient would it be with a billion nodes and million nodes? For example.
     \item \textbf{Dangling nodes have to be taken into account} and affect a lot pagerank. We didn't take them into account on our first pagerank computations and thus, the sum of all pageranks did not amount to 1. 
-    \item Choosing an adhient solution for the dangling nodes should be top priority. In our case since the number of nodes was not that large we could opt for the solution of linking all nodes. However, there may be easier cases (computationally speaking) where linking back the nodes to the ones they are coming makes sense.
+    \item Choosing an right solution for the dangling nodes should be top priority. In our case since the number of nodes was not that large we could opt for the solution of linking all nodes. However, there may be easier cases (computationally speaking) where linking back the nodes to the ones they are coming makes sense.
     \item Using a convergence of $1e^{-8}$ leads in our case to a total number of 14 iterations, which is not that far from what we started on: 10 iterations.
 \end{itemize}
 
