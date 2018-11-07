@@ -196,10 +196,27 @@ The threshold stablished is of value  $1e^{-8}$.  This convergence has led us to
         \captionof{figure}{Convergence factor diff. for each iteration}
 \end{center}
 
+Please take into account that on index 0 we are actually seeing the difference between the first iteration and the second, and so on.
 
 \subsection{Different dumping factors}
 
-TODO
+We have also compared the difference when using different damping factors. We have worked with 4 different damping factors $$L = \{0.8, 0.85, 0.9, 0.95\}$$
+
+For each of these damping factors, we have run an execution and we studied the evolution of the convergence factor and the number of iteration it took to reach our convergence factor used as a threshold.
+
+\begin{center}
+    \includegraphics[width=0.7\linewidth]{damp_ev.png}
+    \captionof{figure}{Evolution of damping factors for 4 different damping factors}
+\end{center}
+
+We can observe that the greater the damping factor, the greater the convergence difference between iterations. Thus, it seems that it takes longer to reach our defined convergence factor. This, in fact, is proven when looking at the plot below. There we can observe that in fact it does take more iterations the larger the damping factor.
+
+
+\begin{center}
+    \includegraphics[width=0.7\linewidth]{damp_it.png}
+    \captionof{figure}{Number of iterations required to reach convergence factor for 4 different damping factors}
+\end{center}
+
 
 \subsection{Efficiency}
 As a side note, we have noticed that our algorithm is not as fast as we would like it to. With the convergence flag (thus, 14 iterations) it takes a total (on average) of 13 seconds. Almost a second per iteration!
@@ -235,6 +252,7 @@ The conclusions we have arrived to after doing this project are manifold:
     \item \textbf{Dangling nodes have to be taken into account} and affect a lot pagerank. We didn't take them into account on our first pagerank computations and thus, the sum of all pageranks did not amount to 1. 
     \item Choosing an right solution for the dangling nodes should be top priority. In our case since the number of nodes was not that large we could opt for the solution of linking all nodes. However, there may be easier cases (computationally speaking) where linking back the nodes to the ones they are coming makes sense.
     \item Using a convergence of $1e^{-8}$ leads in our case to a total number of 14 iterations, which is not that far from what we started on: 10 iterations.
+    \item The greater the damping factor (less probability on jumping to a random page) the greater the number of iterations to reach convergence.
 \end{itemize}
 
 \nocite{*}

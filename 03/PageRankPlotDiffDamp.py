@@ -34,7 +34,9 @@ airportHash = dict() # hash key IATA code -> Airport
 epsilon = 1e-8
 #P = []       # Initial PageRank vector
 diffP = []
- 
+diffP2 = []
+diffP3 = []
+
 def readAirports(fd):
     print("Reading Airport file from {0}".format(fd))
     airportsTxt = open(fd, "r", encoding="utf8")
@@ -132,7 +134,7 @@ def computePageRanks(convergeFlag):
     n = len(airportList)
     P = [1/n] * n
     
-    L = 0.95        # Damping factor
+    L = 0.85        # Damping factor
 
     aOutdegreeZero = filter(lambda a: a.outweight == 0, airportList)
     aOutdegreeZero = len(list(aOutdegreeZero))
@@ -188,7 +190,6 @@ def maxWeight():
     print("Airport "+maxw.code+" has max outwieght : " + "{}".format(maxw.outweight))
 
 def plotDiffP():
-    print(diffP)
     plt.plot(diffP, 'ro', diffP)
     plt.ylabel("Convergence factor")
     plt.xlabel("Iterations")
