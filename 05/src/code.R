@@ -96,6 +96,8 @@ lana <- songdata[songdata$artist == 'Lana Del Rey', ]
 lcohen <- songdata[songdata$artist == 'Leonard Cohen', ]
 maroon5 <- songdata[songdata$artist == 'Maroon 5', ]
 edsheeran <- songdata[songdata$artist == 'Ed Sheeran', ]
+beatles <- songdata[songdata$artist == 'The Beatles', ]
+
 
 adeleSongs <- c("134", "138", "139", "143", "22952", "22953", "22954", "22960", "22967", "22969", "22971", "22976", "22977", "22984", "22989", "22990", "22991")
 adeleC <- adele[adeleSongs, ]
@@ -121,8 +123,11 @@ coldplayC <- coldplay[coldplaycSongs, ]
 abbacSongs <- c("12", "14", "50", "71", "91", "96", "100", "105", "84")
 abbaC <- ABBA[abbacSongs, ]
 
-pinkfSongs <- c("48440", "48431")
+pinkfSongs <- c("48440", "48431", "16098")
 pinkfC <- Pink.Floyd[pinkfSongs, ]
+
+beatlesSongs <- c("1209", "1211", "1214", "1223", "1224", "24693", "24695", "24696", "24708", "24748", "24750", "24762", "24764", "24792", "24802", "24806", "24811")
+beatlesC <- beatles[beatlesSongs, ]
 
 c.selection = rbind(adeleC, bowieC)
 c.selection = rbind(c.selection, lanaC)
@@ -131,5 +136,6 @@ c.selection = rbind(c.selection, maroon5C)
 c.selection = rbind(c.selection, edsheeranC)
 c.selection = rbind(c.selection, coldplayC)
 c.selection = rbind(c.selection, abbaC)
-c.selection = rbind(c.selection, phil.Laura)
+c.selection = rbind(c.selection, pinkfC)
+c.selection = rbind(c.selection, beatlesC)
 nrow(c.selection)
