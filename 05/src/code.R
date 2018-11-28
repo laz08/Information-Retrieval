@@ -1,5 +1,5 @@
 # Load and install necessary packages
-requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra")
+requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra", "rlist")
 
 for (pac in requiredPackages) {
     if(!require(pac,  character.only=TRUE)){
@@ -17,7 +17,7 @@ if(grepl("nora", wd)) {
     setwd("~/Documents/18-19/IR/LABS/05/")
 } else {
     # Set Carolina Working directory
-    setwd("")
+    setwd("~/Documents/FEUP/5A/1S/IR/Information-Retrieval/05")
 }
 rm(wd)
 
@@ -86,3 +86,50 @@ laura.selection = rbind(laura.selection, psb.Laura)
 laura.selection = rbind(laura.selection, bruce.Laura)
 laura.selection = rbind(laura.selection, phil.Laura)
 nrow(laura.selection)
+
+
+#Carolina selection
+
+adele <- songdata[songdata$artist == 'Adele', ]
+bowie <- songdata[songdata$artist == 'David Bowie', ]
+lana <- songdata[songdata$artist == 'Lana Del Rey', ]
+lcohen <- songdata[songdata$artist == 'Leonard Cohen', ]
+maroon5 <- songdata[songdata$artist == 'Maroon 5', ]
+edsheeran <- songdata[songdata$artist == 'Ed Sheeran', ]
+
+adeleSongs <- c("134", "138", "139", "143", "22952", "22953", "22954", "22960", "22967", "22969", "22971", "22976", "22977", "22984", "22989", "22990", "22991")
+adeleC <- adele[adeleSongs, ]
+
+bowieSongs <- c("3763", "3810")
+bowieC <- bowie[bowieSongs, ]
+
+lanaSongs <- c("11161", "11167", "11170", "41166", "41169", "41210", "41227", "41234")
+lanaC <- lana[lanaSongs, ]
+
+lcohenSongs <- c("11448", "11453", "11456", "11459", "11461", "11496", "41527", "41541", "41541", "41546")
+lcohenC <- lcohen[lcohenSongs, ]
+
+maroon5Songs <- c("12534", "43092", "43101", "43139", "43140", "43141", "43134", "43142", "43146", "43156", "43162", "43170", "43171", "43176", "43178")
+maroon5C <- maroon5[maroon5Songs, ]
+
+edSongs <- c("30753", "30756", "30758", "30759", "30768", "30777")
+edsheeranC <- edsheeran[edSongs, ]
+
+coldplaycSongs <- c("3257", "3260", "3266", "3277", "3307", "3308", "3309", "3319", "3322", "3320", "3325", "28155", "28183", "28188")
+coldplayC <- coldplay[coldplaycSongs, ]
+
+abbacSongs <- c("12", "14", "50", "71", "91", "96", "100", "105", "84")
+abbaC <- ABBA[abbacSongs, ]
+
+pinkfSongs <- c("48440", "48431")
+pinkfC <- Pink.Floyd[pinkfSongs, ]
+
+c.selection = rbind(adeleC, bowieC)
+c.selection = rbind(c.selection, lanaC)
+c.selection = rbind(c.selection, lcohenC)
+c.selection = rbind(c.selection, maroon5C)
+c.selection = rbind(c.selection, edsheeranC)
+c.selection = rbind(c.selection, coldplayC)
+c.selection = rbind(c.selection, abbaC)
+c.selection = rbind(c.selection, phil.Laura)
+nrow(c.selection)
