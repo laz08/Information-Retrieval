@@ -35,6 +35,9 @@ Europe <- songdata[songdata$artist == 'Europe', ]
 Queen <- songdata[songdata$artist == 'Queen', ]
 Neil.Young <- songdata[songdata$artist == 'Neil Young', ]
 Pet.Shop.Boys <- songdata[songdata$artist == 'Pet Shop Boys', ]
+Bruce.Springsteen <- songdata[songdata$artist == 'Bruce Springsteen', ]
+Phil.Collins <- songdata[songdata$artist == 'Phil Collins', ]
+
 
 
 Pink.Floyd <- songdata[songdata$artist == 'Pink Floyd', ]
@@ -67,10 +70,19 @@ neil.Laura <- Neil.Young[neilSongs, ]
 psb <- c("15798", "15800", "15802", "15804", "15811", "15814", "15819", "15821", "15837", "15844", "15858", "47958", "47966", "47968", "47970", "47979", "47986", "47996", "48020", "48021")
 psb.Laura <- Pet.Shop.Boys[psb, ]
 
+bruceSongs <- c("2011", "2038", "2053", "26541", "26544", "26584")
+bruce.Laura <- Bruce.Springsteen[bruceSongs, ]
+
+philSongs <- c("15942", "15962", "15974", "16003", "48239")
+phil.Laura <- Phil.Collins[philSongs, ]
+
+
 laura.selection = rbind(coldplayLaura, abba.Laura)
 laura.selection = rbind(laura.selection, enya.Laura)
 laura.selection = rbind(laura.selection, europe.Laura)
 laura.selection = rbind(laura.selection, queen.Laura)
 laura.selection = rbind(laura.selection, neil.Laura)
 laura.selection = rbind(laura.selection, psb.Laura)
+laura.selection = rbind(laura.selection, bruce.Laura)
+laura.selection = rbind(laura.selection, phil.Laura)
 nrow(laura.selection)
