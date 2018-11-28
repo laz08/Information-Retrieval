@@ -1,5 +1,5 @@
 # Load and install necessary packages
-requiredPackages <- c("igraph", "ggplot2", "Matrix", "ggthemes", "gridExtra")
+requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra")
 
 for (pac in requiredPackages) {
     if(!require(pac,  character.only=TRUE)){
