@@ -22,3 +22,8 @@ if(grepl("nora", wd)) {
 rm(wd)
 
 #################
+songdata <- read.csv("./datasets/songdata.csv", encoding="851", stringsAsFactors=FALSE)
+songdata$link <- NULL
+songdata$artist <- as.factor(songdata$artist)
+
+levels(songdata$artist)
