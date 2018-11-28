@@ -27,3 +27,29 @@ songdata$link <- NULL
 songdata$artist <- as.factor(songdata$artist)
 
 levels(songdata$artist)
+
+coldplay <- songdata[songdata$artist == 'Coldplay', ]
+nrow(coldplay)
+
+ABBA <- songdata[songdata$artist == 'ABBA', ]
+nrow(ABBA)
+
+Enya <- songdata[songdata$artist == 'Enya', ]
+nrow(Enya)
+
+Europe <- songdata[songdata$artist == 'Europe', ]
+nrow(Europe)
+
+Queen <- songdata[songdata$artist == 'Queen', ]
+nrow(Queen)
+
+Neil.Young <- songdata[songdata$artist == 'Neil Young', ]
+nrow(Neil.Young)
+
+Pet.Shop.Boys <- songdata[songdata$artist == 'Pet Shop Boys', ]
+nrow(Pet.Shop.Boys)
+
+Pink.Floyd <- songdata[songdata$artist == 'Pink Floyd', ]
+nrow(Pink.Floyd)
+
+
