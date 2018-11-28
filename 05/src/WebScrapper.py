@@ -60,8 +60,9 @@ def getBandSongs(artist):
 
     artist = re.sub('[^A-Za-z0-9]+', "", artist)
 
-    url = "http://www.azlyrics.com/"+artist[0]+"/"+artist+".html"
 
+    url = "http://www.azlyrics.com/"+artist[0]+"/"+artist+".html"
+    print(url)
     try:
         content = UrlReq.urlopen(url).read()
         soup = BS(content, 'html.parser')
@@ -124,9 +125,10 @@ def getAllBandLyrics(band):
         songs = getBandSongs(band)
         for song in songs:
             counter = counter + 1
-            time.sleep(0.5)
-            #if(counter == 5):
-             #   break
+            time.sleep(1)
+            print(song)
+            if(counter%5 == 0):
+                time.sleep(3)
 
             lyrics = getLyrics(band,song)
             listlyr.append(lyrics)
@@ -137,7 +139,7 @@ def getAllBandLyrics(band):
 
 
         
-def writeToFile(fileOut, songsLyrics):
+def writeToFile(fileOut, songsLyrics, bandname):
 
     outStr = ""
     for song in songsLyrics:
@@ -148,7 +150,7 @@ def writeToFile(fileOut, songsLyrics):
             if (not word in ENGLISH_STOPWORDS):
                 finalWords = finalWords + word + " "
 
-        outStr = outStr + finalWords + "; \n"
+        outStr = outStr + bandname + "; "+ finalWords + "; \n"
     f = open(fileOut, 'w+')
     f.write(str(outStr))
     f.close()
@@ -157,10 +159,10 @@ def writeToFile(fileOut, songsLyrics):
 #Debugger
 if __name__ == "__main__":
 
-    band = 'paramore'
+    band = 'pulp'
     outputfilename = band + '_songs.txt'
 
     songLyrics = getAllBandLyrics(band)
     
-    writeToFile(outputfilename, songLyrics)
+    writeToFile(outputfilename, songLyrics, band)
  
