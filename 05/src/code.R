@@ -37,8 +37,20 @@ Neil.Young <- songdata[songdata$artist == 'Neil Young', ]
 Pet.Shop.Boys <- songdata[songdata$artist == 'Pet Shop Boys', ]
 Bruce.Springsteen <- songdata[songdata$artist == 'Bruce Springsteen', ]
 Phil.Collins <- songdata[songdata$artist == 'Phil Collins', ]
+aerosmith <- songdata[songdata$artist == 'Aerosmith', ]
+elo <- songdata[songdata$artist == 'Electric Light Orchestra', ]
+Elton.John <- songdata[songdata$artist == 'Elton John', ]
+Evanescense <- songdata[songdata$artist == 'Evanescence',]
+Grease <- songdata[songdata$artist == 'Grease',]
 
 
+adele <- songdata[songdata$artist == 'Adele', ]
+bowie <- songdata[songdata$artist == 'David Bowie', ]
+lana <- songdata[songdata$artist == 'Lana Del Rey', ]
+lcohen <- songdata[songdata$artist == 'Leonard Cohen', ]
+maroon5 <- songdata[songdata$artist == 'Maroon 5', ]
+edsheeran <- songdata[songdata$artist == 'Ed Sheeran', ]
+beatles <- songdata[songdata$artist == 'The Beatles', ]
 
 Pink.Floyd <- songdata[songdata$artist == 'Pink Floyd', ]
 nrow(Pink.Floyd)
@@ -76,6 +88,27 @@ bruce.Laura <- Bruce.Springsteen[bruceSongs, ]
 philSongs <- c("15942", "15962", "15974", "16003", "48239")
 phil.Laura <- Phil.Collins[philSongs, ]
 
+beatles.Laura.Songs <- c("1209", "24693", "24695", "24696", "1224", "24750", "24748", "24802", "24818", "24820", "24823")
+beatles.Laura<- beatles[beatles.Laura.Songs, ]
+
+maroon5.L.songs <- c("43092", "12523", "12534")
+maroon5Laura <- maroon5[maroon5.L.songs, ]
+
+aerosmithSongs <- c("23017", "22995")
+aerosmith.Laura <- aerosmith[aerosmithSongs, ]
+
+eloSongs <- c("4744", "30861", "30871", "30891", "30928", "30947")
+elo.Laura <- elo[eloSongs, ]
+
+eltonSongs <- c("4879", "31144")
+Elton.John.Laura <- Elton.John[eltonSongs, ]
+
+EvanescenseSongs <- c("5543")
+Ev.Laura <- Evanescense[EvanescenseSongs, ]
+
+GreaseSongs <- c("34585", "7201", "34578", "34592", "34591")
+Grease.Laura <- Grease[GreaseSongs, ]
+
 
 laura.selection = rbind(coldplayLaura, abba.Laura)
 laura.selection = rbind(laura.selection, enya.Laura)
@@ -85,19 +118,17 @@ laura.selection = rbind(laura.selection, neil.Laura)
 laura.selection = rbind(laura.selection, psb.Laura)
 laura.selection = rbind(laura.selection, bruce.Laura)
 laura.selection = rbind(laura.selection, phil.Laura)
+laura.selection = rbind(laura.selection, beatles.Laura)
+laura.selection = rbind(laura.selection, maroon5Laura)
+laura.selection = rbind(laura.selection, aerosmith.Laura)
+laura.selection = rbind(laura.selection, elo.Laura)
+laura.selection = rbind(laura.selection, Elton.John.Laura)
+laura.selection = rbind(laura.selection, Ev.Laura)
+laura.selection = rbind(laura.selection, Grease.Laura)
 nrow(laura.selection)
 
 
 #Carolina selection
-
-adele <- songdata[songdata$artist == 'Adele', ]
-bowie <- songdata[songdata$artist == 'David Bowie', ]
-lana <- songdata[songdata$artist == 'Lana Del Rey', ]
-lcohen <- songdata[songdata$artist == 'Leonard Cohen', ]
-maroon5 <- songdata[songdata$artist == 'Maroon 5', ]
-edsheeran <- songdata[songdata$artist == 'Ed Sheeran', ]
-beatles <- songdata[songdata$artist == 'The Beatles', ]
-
 
 adeleSongs <- c("134", "138", "139", "143", "22952", "22953", "22954", "22960", "22967", "22969", "22971", "22976", "22977", "22984", "22989", "22990", "22991")
 adeleC <- adele[adeleSongs, ]
