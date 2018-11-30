@@ -170,3 +170,16 @@ c.selection = rbind(c.selection, abbaC)
 c.selection = rbind(c.selection, pinkfC)
 c.selection = rbind(c.selection, beatlesC)
 nrow(c.selection)
+
+c.selection <- cbind(c.selection, Carolina = rep(TRUE, nrow(c.selection)))
+laura.selection <- cbind(laura.selection, Carolina = rep(FALSE, nrow(laura.selection)))
+
+c.selection <- cbind(c.selection, Laura = rep(FALSE, nrow(c.selection)))
+laura.selection <- cbind(laura.selection, Laura = rep(TRUE, nrow(laura.selection)))
+
+all.songs <- rbind(c.selection, laura.selection)
+
+all.songs[, c(1,2,4,5)]
+all.songs[, -c(3)]
+
+# TODO: Stemming and stopword removal on lyrics (column 3)
