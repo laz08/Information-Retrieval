@@ -1,5 +1,5 @@
 # Load and install necessary packages
-requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra", "rlist")
+requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra", "rlist", "corpus", "tm")
 
 for (pac in requiredPackages) {
     if(!require(pac,  character.only=TRUE)){
@@ -182,4 +182,16 @@ all.songs <- rbind(c.selection, laura.selection)
 all.songs[, c(1,2,4,5)]
 all.songs[, -c(3)]
 
-# TODO: Stemming and stopword removal on lyrics (column 3)
+#Stemming and stopword removal on lyrics (column 3)
+
+mystopwords <- list.append(stopwords_en, c("vers", "verse"))
+
+myfilter <- text_filter(
+            stemmer = "en",
+            drop_letter = FALSE,
+            drop_number = TRUE, drop_punct = TRUE,
+            drop_symbol = TRUE,
+            drop = mystopwords)
+
+all.songs$text <- text_tokens(all.songs$text, filter = myfilter) #decide if better as a list or as text
+
