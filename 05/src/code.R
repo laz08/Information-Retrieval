@@ -1,5 +1,7 @@
+rm(list = ls())
+
 # Load and install necessary packages
-requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra", "rlist", "compare")
+requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra", "rlist", "compare", "corpus", "tm", "text2vec")
 
 for (pac in requiredPackages) {
     if(!require(pac,  character.only=TRUE)){
@@ -194,24 +196,38 @@ if(!LOAD_MERGED_SELECTION){
     # View(all.songs2)
     # write.csv(all.songs2, "./datasets/merged_songs.csv")
 } else {
-    merged_songs <- read.csv("./datasets/merged_songs.csv", stringsAsFactors = FALSE,)
+    merged_songs <- read.csv("./datasets/merged_songs.csv", stringsAsFactors = FALSE)
     merged_songs$X <- NULL
 }
 
 
+#Stemming and stopword removal on lyrics (column 3)
+mystopwords <- list.append(stopwords_en, c("vers", "verse"))
 
-# TODO: Stemming and stopword removal on lyrics (column 3)
-ENGLISH_STOPWORDS = c("i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now", "\n", "")
+myfilter <- text_filter(
+            stemmer = "en",
+            drop_letter = FALSE,
+            drop_number = TRUE, drop_punct = TRUE,
+            drop_symbol = TRUE,
+            drop = mystopwords)
 
-i = 1
-for (lyrics in merged_songs[, 3]) {
-    lyrics.words = strsplit(lyrics, " ")  
-    lyrics.without.stopwords = c()
-    for (word in lyrics.words) {
-        if(!(word %in% ENGLISH_STOPWORDS)){
-            lyrics.without.stopwords = append(lyrics.without.stopwords, word)
-        }
-    }
-    merged_songs[i, 3] <- paste(lyrics.without.stopwords, collapse = " ")
-    i = i + 1
-}
+merged_songs$text <- text_tokens(merged_songs$text, filter = myfilter) 
+
+
+### Similarity
+
+nrow(merged_songs)
+
+it = itoken(merged_songs$text, progressbar = FALSE)
+
+v = create_vocabulary(it)
+vectorizer = vocab_vectorizer(v)
+
+dtm = create_dtm(it, vectorizer)
+tfidf = TfIdf$new()
+dtm_tfidf = fit_transform(dtm, tfidf)
+
+d1_d2_tfidf_cos_sim = sim2(x = dtm_tfidf, method = "cosine", norm = "l2")
+
+d1_d2_tfidf_cos_sim[1:2, 1:2]
+
