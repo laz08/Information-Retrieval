@@ -102,11 +102,25 @@ for (x in seq(nrow(merged_songs))) {
 
 colnames(adj.mat) = songNames; rownames(adj.mat) = songNames
 
+
+chosenByNames = c("Carolina", "Laura", "Both")
+chosen = c()
+for (x in seq(nrow(merged_songs))) {
+    chosen = append(chosen, ifelse(merged_songs[x, ]$Carolina & merged_songs[x, ]$Laura, chosenByNames[3],
+                                   ifelse(merged_songs[x, ]$Carolina, chosenByNames[1], chosenByNames[2])))
+}
+
+chosen <- as.factor(chosen)
+
 ##############################
 ###### Create graph ##########
 ##############################
-songsGraph = graph_from_adjacency_matrix(adj.mat)
+songsGraph = graph_from_adjacency_matrix(adj.mat, mode = "undirected")
 plot(songsGraph)
+
+
+set_vertex_attr(songsGraph, "chosenBy", index = V(songsGraph), chosen)
+plot(songsGraph, vertex.color = V(songsGraph)$chosenBy)#Not working.
 
 ##############################
 ######  Communties  ##########
