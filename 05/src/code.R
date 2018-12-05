@@ -211,8 +211,13 @@ myfilter <- text_filter(
             drop_symbol = TRUE,
             drop = mystopwords)
 
-merged_songs$text <- text_tokens(merged_songs$text, filter = myfilter) 
+merged_songs <- read.csv("./datasets/merged_songs.csv", stringsAsFactors = FALSE)
+merged_songs$X <- NULL
 
+tokens <- text_tokens(merged_songs$text, filter = myfilter) 
+for (x in seq(nrow(merged_songs))) {
+    merged_songs[x, ]$text <- paste(tokens[[x]], collapse=" ")
+}
 
 ### Similarity
 
@@ -228,6 +233,8 @@ tfidf = TfIdf$new()
 dtm_tfidf = fit_transform(dtm, tfidf)
 
 d1_d2_tfidf_cos_sim = sim2(x = dtm_tfidf, method = "cosine", norm = "l2")
+d1_d2_tfidf_cos_sim[1:2, 1:5]
 
-d1_d2_tfidf_cos_sim[1:2, 1:2]
+threshold = which(d1_d2_tfidf_cos_sim[1, ] >= 0.05); length(threshold)
+nrow(d1_d2_tfidf_cos_sim[threshold, ])
 
