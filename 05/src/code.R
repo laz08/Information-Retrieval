@@ -1,7 +1,7 @@
 rm(list = ls())
 
 # Load and install necessary packages
-requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra", "rlist", "compare", "corpus", "tm", "text2vec")
+requiredPackages <- c("igraph", "ggplot2", "ggthemes", "gridExtra", "rlist", "compare", "corpus", "tm", "text2vec", "data.table")
 
 for (pac in requiredPackages) {
     if(!require(pac,  character.only=TRUE)){
@@ -27,6 +27,7 @@ rm(wd)
 #########################
 LOAD_MERGED_SELECTION = TRUE
 source("src/songsLoading.R")
+source("src/communitiesFunctions.R")
 #########################
 
 merged_songs <- loadSongs()
@@ -123,5 +124,9 @@ set_vertex_attr(songsGraph, "chosenBy", index = V(songsGraph), chosen)
 plot(songsGraph, vertex.color = V(songsGraph)$chosenBy)#Not working.
 
 ##############################
-######  Communties  ##########
+######  Communities ##########
 ##############################
+
+# This below should be on the report
+computeSummaryTable(songsGraph)
+computeTableForGraph(songsGraph)
