@@ -211,30 +211,39 @@ myfilter <- text_filter(
             drop_symbol = TRUE,
             drop = mystopwords)
 
-merged_songs <- read.csv("./datasets/merged_songs.csv", stringsAsFactors = FALSE)
-merged_songs$X <- NULL
-
 tokens <- text_tokens(merged_songs$text, filter = myfilter) 
 for (x in seq(nrow(merged_songs))) {
     merged_songs[x, ]$text <- paste(tokens[[x]], collapse=" ")
 }
 
+
 ### Similarity
 
-nrow(merged_songs)
+lyrics.itoken = itoken(merged_songs$text, progressbar = FALSE)
+vocab = create_vocabulary(lyrics.itoken)
+#kable(vocab)
+# Many words that only appear once... Let's prune the vocab
+vocab = prune_vocabulary(vocab, term_count_min = 5, doc_proportion_min = 0.1)
+vectorizer = vocab_vectorizer(vocab)
+mean(vocab$term_count)
+median(vocab$term_count)
 
-it = itoken(merged_songs$text, progressbar = FALSE)
+time = Sys.time()
+doc.term.mat = create_dtm(lyrics.itoken, vectorizer)
+print(difftime(Sys.time(), time, units = 'sec'))
 
-v = create_vocabulary(it)
-vectorizer = vocab_vectorizer(v)
+dim(doc.term.mat) # 187 songs. 2659 unique terms. Pruning: 116
 
-dtm = create_dtm(it, vectorizer)
 tfidf = TfIdf$new()
-dtm_tfidf = fit_transform(dtm, tfidf)
+dtm_tfidf = fit_transform(doc.term.mat, tfidf)
+
+dim(doc.term.mat)
+dim(dtm_tfidf)
 
 d1_d2_tfidf_cos_sim = sim2(x = dtm_tfidf, method = "cosine", norm = "l2")
 d1_d2_tfidf_cos_sim[1:2, 1:5]
 
-threshold = which(d1_d2_tfidf_cos_sim[1, ] >= 0.05); length(threshold)
+threshold = which(d1_d2_tfidf_cos_sim[1, ] >= 0.1); length(threshold)
 nrow(d1_d2_tfidf_cos_sim[threshold, ])
+
 
