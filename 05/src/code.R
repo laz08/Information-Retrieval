@@ -26,6 +26,7 @@ rm(wd)
 
 #########################
 LOAD_MERGED_SELECTION = TRUE
+PLOT = FALSE
 source("src/songsLoading.R")
 source("src/communitiesFunctions.R")
 #########################
@@ -36,7 +37,7 @@ merged_songs <- loadSongs()
 ####### STOPWORD ########
 ####### REMOVAL #########
 #########################
-mystopwords <- list.append(stopwords_en, c("vers", "verse"))
+mystopwords <- list.append(stopwords_en, c("vers", "verse", "oh"))
 
 myfilter <- text_filter(
             stemmer = "en",
@@ -45,6 +46,11 @@ myfilter <- text_filter(
             drop_symbol = TRUE,
             drop = mystopwords)
 
+# This is only to know how much we have reduced the text
+lyrics.itoken.tmp = itoken(merged_songs$text, progressbar = FALSE)
+vocab.tmp = create_vocabulary(lyrics.itoken.tmp)
+
+# Performing stopword removal...
 tokens <- text_tokens(merged_songs$text, filter = myfilter) 
 for (x in seq(nrow(merged_songs))) {
     merged_songs[x, ]$text <- paste(tokens[[x]], collapse=" ")
@@ -52,12 +58,11 @@ for (x in seq(nrow(merged_songs))) {
 
 
 ### Similarity
-
 lyrics.itoken = itoken(merged_songs$text, progressbar = FALSE)
 vocab = create_vocabulary(lyrics.itoken)
 #kable(vocab)
 # Many words that only appear once... Let's prune the vocab
-vocab = prune_vocabulary(vocab, term_count_min = 5, doc_proportion_min = 0.1)
+vocab = prune_vocabulary(vocab, term_count_min = 5, doc_proportion_min = 0.10)
 vectorizer = vocab_vectorizer(vocab)
 mean(vocab$term_count)
 median(vocab$term_count)
@@ -66,7 +71,7 @@ time = Sys.time()
 doc.term.mat = create_dtm(lyrics.itoken, vectorizer)
 print(difftime(Sys.time(), time, units = 'sec'))
 
-dim(doc.term.mat) # 287 songs. 2659 unique terms. Pruning: 116
+dim(doc.term.mat) # 287 songs. 2659 unique terms. Pruning: 257
 
 tfidf = TfIdf$new()
 dtm_tfidf = fit_transform(doc.term.mat, tfidf)
@@ -78,9 +83,9 @@ global_cos_sim = sim2(x = dtm_tfidf, method = "cosine", norm = "l2")
 global_cos_sim[1:2, 1:5]
 
 
-threshold = 0.095
+threshold = 0.4
 thresholdRes = which(global_cos_sim[1, ] >= threshold); length(thresholdRes)
-# Nr. of results is greater than 205. So we will have at least 205 connected nodes.
+# Nr. of results is greater than 205. 
 
 ##############################
 ###### Adj. matrix ###########
@@ -89,9 +94,12 @@ thresholdRes = which(global_cos_sim[1, ] >= threshold); length(thresholdRes)
 n.max = nrow(global_cos_sim)
 adj.mat = matrix(0, ncol = n.max, nrow = n.max)
 for (x in seq(n.max)) {
-    for (y in seq(n.max)) {
-        adj.mat[x, y] = ifelse(x == y, 0, ifelse((global_cos_sim[x, y] + 1) == 2, 0,
-               ifelse((global_cos_sim[x, y] + 1) >= 1.2, 1, 0)))
+    for (y in x:n.max) {
+        val = ifelse(x == y, 0, ifelse((global_cos_sim[x, y] + 1) == 2, 0,
+                                 ifelse((global_cos_sim[x, y] + 1) >= (1 + threshold), 1, 0)))
+        
+        adj.mat[x, y] = val
+        adj.mat[y, x] = val
     }
 }
 
@@ -116,15 +124,15 @@ chosen <- as.numeric(chosen)
 ##############################
 
 sums <- apply(adj.mat, 1, sum)
-disconnected <- rev(sort(which(sums == 0)))
-# no disconnected nodes
+(disconnected <- rev(sort(which(sums == 0))))
+length(disconnected) # 12 disconnected nodes
 
 songsGraph = graph_from_adjacency_matrix(adj.mat, mode = "undirected")
-plot(songsGraph)
-
-is_connected(songsGraph) # Reinforcing check of no disconnected nodes
-
 vertex_attr(songsGraph, "chosenBy", index = V(songsGraph)) <- chosen
+
+#songsGraph <- delete.vertices(songsGraph, which(degree(songsGraph)==0))
+#is_connected(songsGraph)
+
 plot(songsGraph, vertex.color = vertex_attr(songsGraph,"chosenBy"))
 
 ##############################
@@ -132,11 +140,13 @@ plot(songsGraph, vertex.color = vertex_attr(songsGraph,"chosenBy"))
 ##############################
 
 # This below should be on the report
-computeSummaryTable(songsGraph)
-computeTableForGraph(songsGraph)
-
-walktrap <- walktrap.community(songsGraph)
-plotGraphSetOfCommunities(walktrap, songsGraph, seq(max(walktrap$membership)))
+if(PLOT){
+    computeSummaryTable(songsGraph)
+    computeTableForGraph(songsGraph)
+    
+    walktrap <- walktrap.community(songsGraph)
+    plotGraphSetOfCommunities(walktrap, songsGraph, seq(max(walktrap$membership)))
+}
 
 
 ###############################

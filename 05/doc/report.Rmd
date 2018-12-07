@@ -1,0 +1,72 @@
+---
+title: "IR 05 - Network Analysis"
+author: "Carolina Jorge, Laura Cebollero"
+date: "12th of December, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+library("knitr")
+```
+```{r setup2, include=FALSE, echo=FALSE, cache=TRUE}
+source("../src/code.R")
+```
+## Introduction
+
+In this lab we are asked to analyse a network of our chosing that relates whichever concepts we are interested in.
+
+We have created an Information Network whose nodes represent songs. We aim to analyze this network, explore some properties and find communities.
+ 
+More specifically, we are interested on seeing which words are more frequently used, how the songs are connected based on their related words, and how well-connected or not the songs that we have each chosen are, to see if our tastes match or not.
+ 
+
+# Creating the network
+
+Let's start with creating the network.
+
+## Vertices properties
+
+The songs that will be used as vertices have been chosen manually from a datase found online \footnote{\url{https://www.kaggle.com/mousehead/songlyrics}}. 
+
+
+Each node contains the following information:
+
+- Band's name
+- Song's name
+- Lyrics
+
+
+## Nodes choosing
+
+Since we are asked to have a network of at least 200 nodes, each one of us have chosen up to 100 songs. We have then merged the selection and since there's been some overlapping from both choosing the same songs, we have selected some more songs randomly and merged them too to ensure having at least 200 nodes.
+
+This selection has resulted in 287 different songs being chosen.
+
+## Lyrics treatment
+
+Let us define our whole corpus as the addition of all the words, which we will refer to as terms, contained in all the song's lyrics.
+
+As we have mentioned in the introduction, we will relate the nodes depending on the terms they have in common. However, there are many words that do not add value or meaning to a song such as `the` or `a`.
+
+Additionally, many of these songs have weird terms stored such as troup-er-er (trooper) from `ABBA - Super trouper`.
+
+Thus, both the non-interesting terms and well as the odd ones that  only appear once or twice in the whole corpus will interfere with the adjacency addition step, so we do not want to consider them.
+
+Because of this, we have applied stemming and stopword removal to each song's lyrics as well as pruning those words that appear less than 5 times in the whole corpus or that appear in less than 10% of the corpus.
+
+Before applying the stemming, stopword removal and pruning, we had 7.693 words. After cleaning the lyrics we have ended up with only 111 different words.
+
+
+## Adjacencies
+
+To determine whether two nodes are connected or not, we are going to use the now clean terms obtained from their lyrics.
+
+To do so, we have created a matrix of dimensions $287 x 111$, where there are 287 songs and 111 different terms. Then, we have computed the tf-idf matrix and computed the cosine similarity of each song with all the others.
+
+This cosine similarity computation results in a matrix of $287 x 287$ with values that range from 0 to 1. We do not want to work with a weighted network, for it is out of our scope, so we are going to transform these values to binary ones by setting a threshold of 0.2.  Thus, their similarity has to be at least of 20%.
+
+For each potential relationship, we are going to check if the similarity of those two song's lyrics is greater than our threshold. If it is, then we are marking their relationship in an adjacency matrix with a 1. We will state otherwise with a zero.
+
+This has ended producing 92 relationships, and not having any node disconnected.
