@@ -4,13 +4,15 @@ computeSummaryTable <- function(g){
                         "E" = numeric(),
                         "k" = numeric(),
                         "delta" = numeric(),
+                        "diameter" = numeric(),
                         stringsAsFactors = FALSE)
     E = length(E(g))
     N = length(V(g))
     k = 2*E/N
     delta = 2*E/(N * (N-1))
+    diameter = diameter(g, directed = FALSE, unconnected = TRUE, weights = NULL)
     
-    table <- rbind(table, list(N, E, round(k, 2), round(delta, 2)))
+    table <- rbind(table, list(N, E, round(k, 2), round(delta, 2), diameter))
     return(table)
 }
 
@@ -167,7 +169,9 @@ plotGraphSetOfCommunities <- function(communities, graph, vecToShow) {
     vOfSubComm <- verticesPos[verticesMembership == subGIdx]
     # Create subgraph of subcommunity subGIdx
     subG = induced_subgraph(graph, vids = vOfSubComm)
-    plot(subG, main=paste("Plot of community", subGIdx), layout=layout.auto,vertex.size=23,vertex.label.color="darkblue",vertex.shape = "sphere", vertex.label.font=2,vertex.color="cyan",edge.color="black")
+    plot(subG, main=paste("Plot of community", subGIdx), layout=layout.auto,vertex.size=23,
+         vertex.label.color="darkblue",vertex.shape = "sphere",
+         vertex.label.font=2,vertex.color=vertex_attr(subG,"chosenBy") ,edge.color="black")
     box(which="plot")
   }
   
