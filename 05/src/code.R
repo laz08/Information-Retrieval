@@ -138,7 +138,7 @@ computeSummaryTable(songsGraph)
 computeTableForGraph(songsGraph)
 
 walktrap <- walktrap.community(songsGraph)
-plotGraphSetOfCommunities(walktrap, songsGraph, seq(4))
+plotGraphSetOfCommunities(walktrap, songsGraph, seq(max(walktrap$membership)))
 
 
 ###############################
