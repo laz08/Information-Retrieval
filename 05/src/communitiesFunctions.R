@@ -5,14 +5,16 @@ computeSummaryTable <- function(g){
                         "k" = numeric(),
                         "delta" = numeric(),
                         "diameter" = numeric(),
+                        "transitivy" = numeric(),
                         stringsAsFactors = FALSE)
     E = length(E(g))
     N = length(V(g))
     k = 2*E/N
     delta = 2*E/(N * (N-1))
     diameter = diameter(g, directed = FALSE, unconnected = TRUE, weights = NULL)
+    transitivity = transitivity(g)
     
-    table <- rbind(table, list(N, E, round(k, 2), round(delta, 2), diameter))
+    table <- rbind(table, list(N, E, round(k, 2), round(delta, 2), diameter, round(transitivity,2)))
     return(table)
 }
 
