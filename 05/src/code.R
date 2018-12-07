@@ -25,7 +25,7 @@ rm(wd)
 
 
 #########################
-LOAD_MERGED_SELECTION = TRUE
+LOAD_MERGED_SELECTION = FALSE
 source("src/songsLoading.R")
 source("src/communitiesFunctions.R")
 #########################
@@ -66,7 +66,7 @@ time = Sys.time()
 doc.term.mat = create_dtm(lyrics.itoken, vectorizer)
 print(difftime(Sys.time(), time, units = 'sec'))
 
-dim(doc.term.mat) # 187 songs. 2659 unique terms. Pruning: 116
+dim(doc.term.mat) # 287 songs. 2659 unique terms. Pruning: 116
 
 tfidf = TfIdf$new()
 dtm_tfidf = fit_transform(doc.term.mat, tfidf)
@@ -88,8 +88,8 @@ n.max = nrow(global_cos_sim)
 adj.mat = matrix(0, ncol = n.max, nrow = n.max)
 for (x in seq(n.max)) {
     for (y in seq(n.max)) {
-        adj.mat[x, y] = ifelse((global_cos_sim[x, y] + 1) == 2, 0,
-               ifelse((global_cos_sim[x, y] + 1) >= 1.2, 1, 0))
+        adj.mat[x, y] = ifelse(x == y, 0, ifelse((global_cos_sim[x, y] + 1) == 2, 0,
+               ifelse((global_cos_sim[x, y] + 1) >= 1.2, 1, 0)))
     }
 }
 
@@ -112,16 +112,22 @@ for (x in seq(nrow(merged_songs))) {
 }
 
 chosen <- as.factor(chosen)
+chosen <- as.numeirc(chosen)
 
 ##############################
 ###### Create graph ##########
 ##############################
+
+sums <- apply(adj.mat, 1, sum)
+disconnected <- rev(sort(which(sums == 0)))
+#no disconnected nodes
+
+
 songsGraph = graph_from_adjacency_matrix(adj.mat, mode = "undirected")
 plot(songsGraph)
 
-
-set_vertex_attr(songsGraph, "chosenBy", index = V(songsGraph), chosen)
-plot(songsGraph, vertex.color = V(songsGraph)$chosenBy)#Not working.
+vertex_attr(songsGraph, "chosenBy", index = V(songsGraph)) <- chosen
+plot(songsGraph, vertex.color = vertex_attr(songsGraph,"chosenBy"))
 
 ##############################
 ######  Communities ##########
@@ -130,3 +136,16 @@ plot(songsGraph, vertex.color = V(songsGraph)$chosenBy)#Not working.
 # This below should be on the report
 computeSummaryTable(songsGraph)
 computeTableForGraph(songsGraph)
+
+walktrap <- walktrap.community(songsGraph)
+plotGraphSetOfCommunities(walktrap, songsGraph, seq(4))
+
+
+###############################
+###### Network Analysis #######
+###############################
+
+#pagerank
+pagerank <- page_rank(songsGraph)
+pagerank.sorted <- rev(sort(pagerank$vector))
+pagerank.sorted[1:10]

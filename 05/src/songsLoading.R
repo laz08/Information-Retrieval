@@ -152,9 +152,14 @@ loadSongs <- function() {
       c.selection = rbind(c.selection, beatlesC)
       nrow(c.selection)
       
+      #random songs to guarantee number of nodes >= 200
+      random.songs <- songdata[sample(nrow(songdata), 100, replace = FALSE), ]
+      random.songs$Carolina <- FALSE
+      random.songs$Laura <- FALSE
+
       # Tmp songs to check for duplicates
       all.songs <- rbind(c.selection, laura.selection)
-      
+
       # Check there are no duplicated rows.
       (duplicated.rows = which(duplicated(all.songs) | duplicated(all.songs[nrow(all.songs):1, ])[nrow(all.songs):1]))
       all.songs[37, -3] # 12534
@@ -164,12 +169,13 @@ loadSongs <- function() {
       c.selection$Carolina <- TRUE
       laura.selection$Laura <- TRUE
       all.songs2 <- merge(c.selection, laura.selection, all=TRUE)
+      all.songs2 <- merge(all.songs2, random.songs, all = TRUE)
       
       all.songs2[is.na(all.songs2$Carolina), ]$Carolina <- FALSE
       all.songs2[is.na(all.songs2$Laura), ]$Laura <- FALSE
       
       # View(all.songs2)
-      # write.csv(all.songs2, "./datasets/merged_songs.csv")
+      write.csv(all.songs2, "./datasets/merged_songs.csv")
   }
       
   merged_songs <- read.csv("./datasets/merged_songs.csv", stringsAsFactors = FALSE)
