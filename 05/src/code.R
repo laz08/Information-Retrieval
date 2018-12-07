@@ -77,8 +77,10 @@ dim(dtm_tfidf)
 global_cos_sim = sim2(x = dtm_tfidf, method = "cosine", norm = "l2")
 global_cos_sim[1:2, 1:5]
 
-threshold = which(global_cos_sim[1, ] >= 0.20); length(threshold)
 
+threshold = 0.095
+thresholdRes = which(global_cos_sim[1, ] >= threshold); length(thresholdRes)
+# Nr. of results is greater than 205. So we will have at least 205 connected nodes.
 
 ##############################
 ###### Adj. matrix ###########
@@ -96,23 +98,18 @@ for (x in seq(n.max)) {
 ##############################
 ###### Vertices names#########
 ##############################
+chosenByNames = c("Carolina", "Laura", "Both")
+chosen = c()
 songNames = c()
 for (x in seq(nrow(merged_songs))) {
     songNames = append(songNames, paste(merged_songs[x, ]$artist, merged_songs[x, ]$song, sep = " - "))
-}
-
-colnames(adj.mat) = songNames; rownames(adj.mat) = songNames
-
-
-chosenByNames = c("Carolina", "Laura", "Both")
-chosen = c()
-for (x in seq(nrow(merged_songs))) {
     chosen = append(chosen, ifelse(merged_songs[x, ]$Carolina & merged_songs[x, ]$Laura, chosenByNames[3],
                                    ifelse(merged_songs[x, ]$Carolina, chosenByNames[1], chosenByNames[2])))
 }
 
+colnames(adj.mat) = songNames; rownames(adj.mat) = songNames
 chosen <- as.factor(chosen)
-chosen <- as.numeirc(chosen)
+chosen <- as.numeric(chosen)
 
 ##############################
 ###### Create graph ##########
@@ -120,11 +117,12 @@ chosen <- as.numeirc(chosen)
 
 sums <- apply(adj.mat, 1, sum)
 disconnected <- rev(sort(which(sums == 0)))
-#no disconnected nodes
-
+# no disconnected nodes
 
 songsGraph = graph_from_adjacency_matrix(adj.mat, mode = "undirected")
 plot(songsGraph)
+
+is_connected(songsGraph) # Reinforcing check of no disconnected nodes
 
 vertex_attr(songsGraph, "chosenBy", index = V(songsGraph)) <- chosen
 plot(songsGraph, vertex.color = vertex_attr(songsGraph,"chosenBy"))
