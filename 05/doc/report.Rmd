@@ -65,8 +65,8 @@ To determine whether two nodes are connected or not, we are going to use the now
 
 To do so, we have created a matrix of dimensions $287 x 111$, where there are 287 songs and 111 different terms. Then, we have computed the tf-idf matrix and computed the cosine similarity of each song with all the others.
 
-This cosine similarity computation results in a matrix of $287 x 287$ with values that range from 0 to 1. We do not want to work with a weighted network, for it is out of our scope, so we are going to transform these values to binary ones by setting a threshold of 0.2.  Thus, their similarity has to be at least of 20%.
+This cosine similarity computation results in a matrix of $287 x 287$ with values that range from 0 to 1. We do not want to work with a weighted network, for it is out of our scope, so we are going to transform these values to binary ones by setting a threshold of 0.4.  Thus, their similarity has to be at least of 40%.
 
 For each potential relationship, we are going to check if the similarity of those two song's lyrics is greater than our threshold. If it is, then we are marking their relationship in an adjacency matrix with a 1. We will state otherwise with a zero.
 
-This has ended producing 92 relationships, and not having any node disconnected.
+This has ended with some nodes disconnected and the graph split, meaning that there are some nodes that cannot be reached from other ones.

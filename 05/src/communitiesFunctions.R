@@ -23,10 +23,6 @@ computeDiffCommunities <- function(graph, communitiesNames) {
     times = list()
     startTime = as.numeric(Sys.time())
     
-    eb = edge.betweenness.community(graph)
-    times = append(times, as.numeric(Sys.time()) - startTime )
-    startTime = as.numeric(Sys.time())
-    
     fastgreedy = fastgreedy.community(graph)
     times = append(times, as.numeric(Sys.time()) - startTime )
     startTime = as.numeric(Sys.time())
@@ -35,15 +31,7 @@ computeDiffCommunities <- function(graph, communitiesNames) {
     times = append(times, as.numeric(Sys.time()) - startTime )
     startTime = as.numeric(Sys.time())
     
-    leadingEigen = leading.eigenvector.community(graph)
-    times = append(times, as.numeric(Sys.time()) - startTime )
-    startTime = as.numeric(Sys.time())
-    
     multilevel = multilevel.community(graph)
-    times = append(times, as.numeric(Sys.time()) - startTime )
-    startTime = as.numeric(Sys.time())
-    
-    spinglass = spinglass.community(graph)
     times = append(times, as.numeric(Sys.time()) - startTime )
     startTime = as.numeric(Sys.time())
     
@@ -58,7 +46,7 @@ computeDiffCommunities <- function(graph, communitiesNames) {
                     "Elapsed time" = times,
                     stringsAsFactors = FALSE)
     
-    communitiesList = list(eb, fastgreedy, labelProp, leadingEigen, multilevel, spinglass, walktrap, infomap)
+    communitiesList = list(fastgreedy, labelProp, multilevel, walktrap, infomap)
     
     return(list(df, communitiesList))
 }
@@ -96,12 +84,9 @@ computeTableForGraph <- function(graph){
     return (resTable)
 }
 
-communitiesNames = c("edge.betweenness",
-                     "fastgreedy",
+communitiesNames = c("fastgreedy",
                      "label",
-                     "leading",
                      "multilevel",
-                     "spinglass",
                      "walktrap",
                      "infomap")
 
