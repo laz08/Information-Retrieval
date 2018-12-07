@@ -25,7 +25,7 @@ rm(wd)
 
 
 #########################
-LOAD_MERGED_SELECTION = FALSE
+LOAD_MERGED_SELECTION = TRUE
 source("src/songsLoading.R")
 source("src/communitiesFunctions.R")
 #########################
