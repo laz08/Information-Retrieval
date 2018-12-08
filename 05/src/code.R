@@ -130,9 +130,6 @@ length(disconnected) # 12 disconnected nodes
 songsGraph = graph_from_adjacency_matrix(adj.mat, mode = "undirected")
 vertex_attr(songsGraph, "chosenBy", index = V(songsGraph)) <- chosen
 
-#songsGraph <- delete.vertices(songsGraph, which(degree(songsGraph)==0))
-#is_connected(songsGraph)
-
 plot(songsGraph, vertex.color = vertex_attr(songsGraph,"chosenBy"))
 
 ##############################

@@ -2,7 +2,9 @@
 title: "IR 05 - Network Analysis"
 author: "Carolina Jorge, Laura Cebollero"
 date: "12th of December, 2018"
-output: pdf_document
+output: 
+    pdf_document:
+        number_sections: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +15,7 @@ library("knitr")
 ```{r setup2, include=FALSE, echo=FALSE, cache=TRUE}
 source("../src/code.R")
 ```
-## Introduction
+# Introduction
 
 In this lab we are asked to analyse a network of our chosing that relates whichever concepts we are interested in.
 
@@ -38,7 +40,7 @@ Each node contains the following information:
 - Lyrics
 
 
-## Nodes choosing
+## Choosing the nodes
 
 Since we are asked to have a network of at least 200 nodes, each one of us have chosen up to 100 songs. We have then merged the selection and since there's been some overlapping from both choosing the same songs, we have selected some more songs randomly and merged them too to ensure having at least 200 nodes.
 
@@ -50,9 +52,9 @@ Let us define our whole corpus as the addition of all the words, which we will r
 
 As we have mentioned in the introduction, we will relate the nodes depending on the terms they have in common. However, there are many words that do not add value or meaning to a song such as `the` or `a`.
 
-Additionally, many of these songs have weird terms stored such as troup-er-er (trooper) from `ABBA - Super trouper`.
+Additionally, many of these songs have weird terms stored such as `troup-er-er` (trouper) from `ABBA - Super trouper`.
 
-Thus, both the non-interesting terms and well as the odd ones that  only appear once or twice in the whole corpus will interfere with the adjacency addition step, so we do not want to consider them.
+Thus, both the non-interesting terms as well as the odd ones that  only appear once or twice in the whole corpus will interfere with the adjacency addition step, so we do not want to consider them.
 
 Because of this, we have applied stemming and stopword removal to each song's lyrics as well as pruning those words that appear less than 5 times in the whole corpus or that appear in less than 10% of the corpus.
 
@@ -63,10 +65,46 @@ Before applying the stemming, stopword removal and pruning, we had 7.693 words. 
 
 To determine whether two nodes are connected or not, we are going to use the now clean terms obtained from their lyrics.
 
-To do so, we have created a matrix of dimensions $287 x 111$, where there are 287 songs and 111 different terms. Then, we have computed the tf-idf matrix and computed the cosine similarity of each song with all the others.
+To do so, we have created a matrix of dimensions 287 x 111, where there are 287 songs and 111 different terms. Then, we have computed the tf-idf matrix and computed the cosine similarity of each song with all the others.
 
-This cosine similarity computation results in a matrix of $287 x 287$ with values that range from 0 to 1. We do not want to work with a weighted network, for it is out of our scope, so we are going to transform these values to binary ones by setting a threshold of 0.4.  Thus, their similarity has to be at least of 40%.
+This cosine similarity computation results in a matrix of 287 x 287 with values that range from 0 to 1. We do not want to work with a weighted network, for it is out of our scope, so we are going to transform these values to binary ones by setting a threshold of 0.4.  Thus, their similarity has to be at least of 40%.
 
-For each potential relationship, we are going to check if the similarity of those two song's lyrics is greater than our threshold. If it is, then we are marking their relationship in an adjacency matrix with a 1. We will state otherwise with a zero.
+For each potential relationship, we are going to check if the similarity of those two song's lyrics is greater or equal than our threshold. If it is, then we are marking their relationship in an adjacency matrix with a 1. We will state otherwise with a zero.
 
-This has ended with some nodes disconnected and the graph split, meaning that there are some nodes that cannot be reached from other ones.
+This has ended with 12 isolated nodes and a disconnected graph, meaning that there are some nodes that cannot be reached from other ones.
+
+
+# Results
+
+Let's now see the network we have ended up with.
+
+## Network metrics
+
+First of all, we are going to check its basic metrics.
+
+```{r echo=FALSE}
+kable(computeSummaryTable(songsGraph),   caption="\\label{tab:table1}Summary table of each graph",
+      col.names = c("N", "E", "$\\langle k \\rangle$", "$\\delta$", "Diameter", "Transitivity"),
+      align=rep('c', 5))
+```
+
+In the table above, we can see that we have 287 nodes and 673 edges. Each vertex has, by average, between 4 and 5 edges (leaning towards 5). The density of the whole network is 0.02, which is very low. This is expected because of the high threshold we have setted when producing the graph. 
+
+The diameter is of 9, which is very small, and the transitivity of 0.37, which is also somewhat low.
+
+Now let's take a look at the communities formed by 5 different algorithms:
+```{r}
+kable(computeTableForGraph(songsGraph))
+```
+
+We can see that the number of communities is very high. The reason behind this is probably that the graph is very disconnected into small clusters, thus leading to such big number of communities.
+
+# Page Rank
+```{r}
+pagerank <- page_rank(songsGraph)
+pagerank.sorted <- rev(sort(pagerank$vector))
+pagerank.sorted[1:10]
+```
+
+
+# Conclusions
