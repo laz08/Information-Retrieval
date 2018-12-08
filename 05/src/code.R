@@ -137,6 +137,9 @@ plot(songsGraph, vertex.color = vertex_attr(songsGraph,"chosenBy"))
 ######  Communities ##########
 ##############################
 
+# Metrics
+degreeSeq = degree(songsGraph, V(songsGraph)); degreeSeq = as.data.frame(degreeSeq)
+
 # This below should be on the report
 if(PLOT){
     computeSummaryTable(songsGraph)
@@ -144,9 +147,11 @@ if(PLOT){
     
     vocabPrunerCount(lyrics.itoken, seq(0, 1, by = 0.05))
     
+    
     walktrap <- walktrap.community(songsGraph)
     plot(walktrap, songsGraph, vertex.label.cex=0.5, vertex.size=5)
     plot(walktrap, songsGraph, vertex.label=NA, vertex.size=5)
+    
     plotGraphSetOfCommunities(walktrap, songsGraph, seq(max(walktrap$membership)))
 }
 
@@ -158,4 +163,9 @@ if(PLOT){
 #pagerank
 pagerank <- page_rank(songsGraph, directed=FALSE)
 pagerank.sorted <- rev(sort(pagerank$vector))
-pagerank.sorted[1:10]
+
+top10PR = (pagerank.sorted[1:10])
+topSongsVals = as.vector(top10PR)
+topPR = data.frame(names(top10PR), topSongsVals)
+
+
