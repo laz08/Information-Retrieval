@@ -163,3 +163,17 @@ plotGraphSetOfCommunities <- function(communities, graph, vecToShow) {
   }
   
 }
+
+
+vocabPrunerCount <- function(lyrics.itoken, thresholds) {
+  
+    numTerms = c()
+    for(t in thresholds){
+        vocab = create_vocabulary(lyrics.itoken)
+        vocab = prune_vocabulary(vocab, term_count_min = 5, doc_proportion_min = t)
+        numTerms = append(numTerms, length(vocab$term))
+    }
+  
+  return(data.frame(thresholds, numTerms))
+}
+

@@ -11,6 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
 library("knitr")
+library("ggplot2")
 ```
 ```{r setup2, include=FALSE, echo=FALSE, cache=TRUE}
 source("../src/code.R")
@@ -44,7 +45,7 @@ Each node contains the following information:
 
 Since we are asked to have a network of at least 200 nodes, each one of us have chosen up to 100 songs. We have then merged the selection and since there's been some overlapping from both choosing the same songs, we have selected some more songs randomly and merged them too to ensure having at least 200 nodes.
 
-This selection has resulted in 287 different songs being chosen.
+This selection has resulted in 207 different songs being chosen.
 
 ## Lyrics treatment
 
@@ -56,27 +57,40 @@ Additionally, many of these songs have weird terms stored such as `troup-er-er` 
 
 Thus, both the non-interesting terms as well as the odd ones that  only appear once or twice in the whole corpus will interfere with the adjacency addition step, so we do not want to consider them.
 
-Because of this, we have applied stemming and stopword removal to each song's lyrics as well as pruning those words that appear less than 5 times in the whole corpus or that appear in less than 10% of the corpus.
+Because of this, we have applied stemming and stopword removal to each song's lyrics as well as pruning those words that appear less than 5 times. 
 
-Before applying the stemming, stopword removal and pruning, we had 7.693 words. After cleaning the lyrics we have ended up with only 111 different words.
+Let us defined $$TA_{min} = 0.15$$ as the minimum Term Appearance of each term in the whole corpus. This means that if a term appears in the whole corpus less than 15% respect to the total, then this word is not going to be taken into account and removed from our vocabulary.
+
+Before applying the stemming, stopword removal and pruning, we had 7.693 words. After cleaning the lyrics we have ended up with only 56 different words.
 
 
 ## Adjacencies
 
 To determine whether two nodes are connected or not, we are going to use the now clean terms obtained from their lyrics.
 
-To do so, we have created a matrix of dimensions 287 x 111, where there are 287 songs and 111 different terms. Then, we have computed the tf-idf matrix and computed the cosine similarity of each song with all the others.
+To do so, we have created a matrix of dimensions 207 x 56, where there are 207 songs and 56 different terms. Then, we have computed the *term frequency/inverse document frequency* (a.k.a. tf-idf) matrix and computed the cosine similarity of each song with all the others.
 
-This cosine similarity computation results in a matrix of 287 x 287 with values that range from 0 to 1. We do not want to work with a weighted network, for it is out of our scope, so we are going to transform these values to binary ones by setting a threshold of 0.4.  Thus, their similarity has to be at least of 40%.
+This cosine similarity computation results in a matrix of 207 x 207 with values that range from 0 to 1. We do not want to work with a weighted network, for it is out of our scope, so we are going to transform these values to binary ones by setting a threshold.
+
+Let us define this Linking Threshold such that $$LT(d1, d2)_{min} = 0.35$$. This means that the  similarity between two songs has to be at least of 35%.
 
 For each potential relationship, we are going to check if the similarity of those two song's lyrics is greater or equal than our threshold. If it is, then we are marking their relationship in an adjacency matrix with a 1. We will state otherwise with a zero.
 
-This has ended with 12 isolated nodes and a disconnected graph, meaning that there are some nodes that cannot be reached from other ones.
+This has ended with zero isolated nodes and a connected graph, meaning that all nodes can be reached from other ones.
 
 
-# Results
+# Analyzing the network
 
-Let's now see the network we have ended up with.
+It is worth mentioning that the results have varied a lot when tuning the parameters minimum values:
+
+- Linking Threshold ($LT(d1, d2)_{min}$)
+- Term Appearance ($TA_{min}$)
+ 
+For now, we are going to analyze the network from the parameters chosen:
+
+-
+-
+
 
 ## Network metrics
 
@@ -106,5 +120,41 @@ pagerank.sorted <- rev(sort(pagerank$vector))
 pagerank.sorted[1:10]
 ```
 
+## Parameters tuning
+
+As said in the beginning of the Network Analysis section, the results have varied a lot depending on the parameters chosen for the minimum Linking Threshold and the minimum Term Appearance.
+
+### Linking threshold effects
+
+First of all, setting a static Linking Threshold $LT(d1, d2)_{min} = 0.35$ means that we are linking the nodes that have at least 35% of similarity between them, which in its turn means that we are not discerning between nodes that are more similar.
+
+For example, if we take a look at this case:
+
+- $LT(d1, d2) = 0.9$
+- $LT(d3, d4) = 0.35$
+
+We can see that both are greater or equal than 0.35. But the similarity between lyrics d1 and d2 is way greater than that of d3 and d4. But we will not know this in the results graph.
+
+By tuning the parameters and choosing a greater $LT(d1, d2)_{min}$, i.e. $$LT(d1, d2)_{min} = 0.6$$
+we end up with a disconnected graph, because not many nodes have similarities with other nodes greater than 0.6.
+
+Thus, we have settled with a similarity big enough so that the lyrics are somewhat similar, taking into account that the number of terms in the corpus is 57. 
+
+This leads us to the take a look at how the minimum Term Appearance affects the results.
+
+### Term Appearance effects
+
+Let's recall that we had settled with  $TA_{min} = 0.15$ (minimum Term Appearance).
+
+Below, we can see a table of how this parameter affects the number of terms used from the corpus:
+```{r echo=FALSE}
+table = vocabPrunerCount(lyrics.itoken, seq(0, 1, by = 0.05))
+kable(table[1:12, ])
+ggplot(data = table) +
+  aes(x = thresholds, y = numTerms, size = numTerms) +
+  geom_point(color = '#0c4c8a') +
+      geom_line(color = '#e41a1c') +
+  theme_bw()
+```
 
 # Conclusions

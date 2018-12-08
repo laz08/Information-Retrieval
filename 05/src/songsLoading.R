@@ -153,7 +153,7 @@ loadSongs <- function() {
       nrow(c.selection)
       
       #random songs to guarantee number of nodes >= 200
-      random.songs <- songdata[sample(nrow(songdata), 100, replace = FALSE), ]
+      random.songs <- songdata[sample(nrow(songdata), 20, replace = FALSE), ]
       random.songs$Carolina <- FALSE
       random.songs$Laura <- FALSE
 
@@ -176,6 +176,7 @@ loadSongs <- function() {
       
       # View(all.songs2)
       write.csv(all.songs2, "./datasets/merged_songs.csv")
+      return(all.songs2)
   }
       
   merged_songs <- read.csv("./datasets/merged_songs.csv", stringsAsFactors = FALSE)

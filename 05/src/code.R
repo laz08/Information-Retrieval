@@ -62,7 +62,7 @@ lyrics.itoken = itoken(merged_songs$text, progressbar = FALSE)
 vocab = create_vocabulary(lyrics.itoken)
 #kable(vocab)
 # Many words that only appear once... Let's prune the vocab
-vocab = prune_vocabulary(vocab, term_count_min = 5, doc_proportion_min = 0.10)
+vocab = prune_vocabulary(vocab, term_count_min = 5, doc_proportion_min = 0.15)
 vectorizer = vocab_vectorizer(vocab)
 mean(vocab$term_count)
 median(vocab$term_count)
@@ -83,7 +83,7 @@ global_cos_sim = sim2(x = dtm_tfidf, method = "cosine", norm = "l2")
 global_cos_sim[1:2, 1:5]
 
 
-threshold = 0.4
+threshold = 0.35
 thresholdRes = which(global_cos_sim[1, ] >= threshold); length(thresholdRes)
 # Nr. of results is greater than 205. 
 
@@ -130,6 +130,7 @@ length(disconnected) # 12 disconnected nodes
 songsGraph = graph_from_adjacency_matrix(adj.mat, mode = "undirected")
 vertex_attr(songsGraph, "chosenBy", index = V(songsGraph)) <- chosen
 
+is_connected(songsGraph)
 plot(songsGraph, vertex.color = vertex_attr(songsGraph,"chosenBy"))
 
 ##############################
@@ -141,7 +142,11 @@ if(PLOT){
     computeSummaryTable(songsGraph)
     computeTableForGraph(songsGraph)
     
+    vocabPrunerCount(lyrics.itoken, seq(0, 1, by = 0.05))
+    
     walktrap <- walktrap.community(songsGraph)
+    plot(walktrap, songsGraph, vertex.label.cex=0.5, vertex.size=5)
+    plot(walktrap, songsGraph, vertex.label=NA, vertex.size=5)
     plotGraphSetOfCommunities(walktrap, songsGraph, seq(max(walktrap$membership)))
 }
 
@@ -151,6 +156,6 @@ if(PLOT){
 ###############################
 
 #pagerank
-pagerank <- page_rank(songsGraph)
+pagerank <- page_rank(songsGraph, directed=FALSE)
 pagerank.sorted <- rev(sort(pagerank$vector))
 pagerank.sorted[1:10]
