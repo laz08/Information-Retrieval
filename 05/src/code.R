@@ -147,12 +147,34 @@ if(PLOT){
     
     vocabPrunerCount(lyrics.itoken, seq(0, 1, by = 0.05))
     
+    tkplot(songsGraph, vertex.color = vertex_attr(songsGraph,"chosenBy"))
     
+    subset.songs <- induced.subgraph(songsGraph, V(songsGraph)[degree(songsGraph) >= 5 & degree(songsGraph) <= 10]); E(subset.songs)
+    tkplot(subset.songs, vertex.color = vertex_attr(subset.songs,"chosenBy"))
+    
+    
+    ## Walktrap
     walktrap <- walktrap.community(songsGraph)
+    
+    subset.songs <- induced.subgraph(songsGraph, V(songsGraph)[degree(songsGraph) >= 5 & degree(songsGraph) <= 10]); E(subset.songs)
+    tkplot(subset.songs, vertex.color = vertex_attr(subset.songs,"chosenBy"))
+    
+    
     plot(walktrap, songsGraph, vertex.label.cex=0.5, vertex.size=5)
     plot(walktrap, songsGraph, vertex.label=NA, vertex.size=5)
     
     plotGraphSetOfCommunities(walktrap, songsGraph, seq(max(walktrap$membership)))
+    
+   ########## Comparison of words
+    #merged_songs[which(merged_songs$song == "Woman"), ] # Row nr 137
+    #merged_songs[which(merged_songs$song == "The Final Countdown"), ] # row nr 92
+    
+    vocab.cmp.table = t(as.matrix(doc.term.mat[c(92, 137),]))
+    
+    vocab.cmp.table = vocab.cmp.table[rowSums(vocab.cmp.table != 0) > 0, ]
+    vocab.cmp.table = cbind(seq(nrow(vocab.cmp.table)), vocab.cmp.table)
+    
+    
 }
 
 

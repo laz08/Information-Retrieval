@@ -14,7 +14,7 @@ library("knitr")
 library("ggplot2")
 library("data.table")
 ```
-```{r setup2, include=FALSE, echo=FALSE, cache=FALSE}
+```{r setup2, include=FALSE, echo=FALSE, cache=F}
 source("../src/code.R")
 ```
 # Introduction
@@ -80,9 +80,18 @@ For each potential relationship, we are going to check if the similarity of thos
 This has ended with zero isolated nodes and a connected graph, meaning that all nodes can be reached from other ones.
 
 
+\newpage
+
 ## Resulting network
 
-TODO: Plot network
+The color in the vertices represent who has selected each vertex:
+
+- Red: Carolina
+- Green: Laura
+- Black: Carolina & Laura
+
+![](full_graph.png)
+
 
 # Analyzing the network
 
@@ -121,35 +130,28 @@ Finally, the transitivity is of 0.3, which is also somewhat low but not unexpect
 For the sake of knowing how the network's vertex degree has ended up, since for now we have only taken a look at the average vertex degree, we are going to plot the sequence of vertex degrees:
 
 ```{r  echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+vals = as.vector(degreeSeq$degreeSeq)
+df = data.frame(seq(length(vals)), vals)
+ggplot(data = df) +
+  aes(x = seq.length.vals.., y = vals) +
+  geom_line(color = '#0c4c8a') +
+    geom_point(color = '#6dcd59') +
+  theme_minimal()
+```
+
+And a histogram so we can see which vertex degrees are more common:
+
+```{r  echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
 ggplot(data = degreeSeq) +
   aes(x = degreeSeq) +
   geom_histogram(bins = 100, fill = '#3e4a89') +
   theme_bw()
 ```
 
-We can see that most vertices have a degree between 7/8 and a little over 20, with a long tail up to a little over 50. 
+We can see that most vertices have a degree between 7/8 and a little over 25, with a long tail up to a little over 50. 
 
 So there seems to be some nodes that are very well connected although they are exceptions, and most of them stay on the range between 10 and 20.
 
-## Network & community metrics
-
-Now, since both of us are enrolled in CSN, we are going to use some of the work we made in the fourth lab.\footnote{
-As a side note, the number of methods used is less than those used on the CSN 4th lab. This is due to us having used this table many times with other graphs that resulted on being disconnected, depending on the Linking Threshold used. The removed methods were not working with disconnected graphs, so we opted to remove them.}
-
-Let's take a look at the communities formed by 5 different algorithms and the average community metric:
-```{r echo=FALSE}
-kable(computeTableForGraph(songsGraph), caption="\\label{tab:table2} Community methods, number of communities found by each and average metrics per community")
-```
-
-We can see that the number of communities ranges from 1 to 10. Since the graph is not disconnected, it seems that infomap and label have not been able to detect communities on it.
-
-Multilevel and walktrap on the other hand have found 8 and 10 communities respectively, which is somewhat high.
-
-Fastgreedy on the other hand seems to compromise and stay in the middle with 4 communities found. 
-
-# Community detection
-
-TODO: Plot some communities with our preferred method of discovering communities.
 
 # Parameters tuning
 
@@ -219,6 +221,106 @@ We can see how all values of those with the highest ones are actually pretty low
 We can only guess that if we were to use a different method to choose when to add an adjacency between two nodes, maybe we would get some song with very common words that are present in some others. The later not having a variety of words. Thus, having a very central node with a high coefficient because every node points to it.
 
 
+# Community detection
+
+After having studied a little the generated network, seen its degree distribution, basic metrics, and how Page Rank applies to it, let's proceed onto communities detection.
+
+## Network & community metrics
+
+Now, since both of us are enrolled in CSN, we are going to use some of the work we made in the fourth lab.\footnote{
+As a side note, the number of methods used is less than those used on the CSN 4th lab. This is due to us having used this table many times with other graphs that resulted on being disconnected, depending on the Linking Threshold used. The removed methods were not working with disconnected graphs, so we opted to remove them.}
+
+Let's take a look at the communities formed by 5 different algorithms and the average community metric:
+```{r echo=FALSE}
+kable(computeTableForGraph(songsGraph), caption="\\label{tab:table2} Community methods, number of communities found by each and average metrics per community")
+```
+
+We can see that the number of communities ranges from 1 to 10. Since the graph is not disconnected, it seems that infomap and label have not been able to detect communities on it.
+
+Multilevel and walktrap on the other hand have found 8 and 10 communities respectively, which is somewhat high.
+
+Fastgreedy on the other hand seems to compromise and stay in the middle with 4 communities found. 
+
+## Walktrap algorithm for community detection
+
+Since Walktrap is the algorithm that has found the highest number of communities, let's check how big is the biggest one and how they are formed.
+
+```{r echo=F}
+ walktrap <- walktrap.community(songsGraph)
+kable(computeCommunitySpecifications(songsGraph, walktrap), caption="\\label{tab:table5}Summary table of each community found",
+      col.names = c("Community", "N", "E", "$\\langle k \\rangle$", "$\\delta$", "Diameter"),
+      align=rep('c', 5))
+```
+
+We can see that the communities found are very varied. The number of nodes is greater in some of them, whereas some of them are smaller with only 6 nodes.
+
+However we can observe how these small communities are actually pretty well connected and how their density is high (i.e. Community 10).
+
+
+Below we can see how the communities are grouped without adding the nodes' labels.
+
+
+```{r  echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+plot(walktrap, songsGraph, vertex.label=NA, vertex.size=5)
+```
+We can see many communities overlapping.
+  
+However since there are so many nodes it is difficult to distinguish the communities.
+
+If we plot the graph without representing the edges it is a little bit easier to see the communities:
+
+```{r  echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+songs.graph.no.edges <- delete.edges(songsGraph, E(songsGraph))
+plot(walktrap, songs.graph.no.edges, vertex.label=NA, vertex.size=5)
+```
+
+And finally, we can plot some of the small communities to see which songs are related:
+
+```{r  echo=FALSE, out.width="300px", out.height="250px", fig.align="center"}
+plotGraphSetOfCommunities(walktrap, songsGraph, c(7, 10))
+```
+
+From the titles only we cannot check whether these connections are correct or not. However, taking a look at their lyrics shows as that they have some words in common.
+
+Take, for example, the lyrics of  `Maroon 5 - Woman` and `Europe - The Final Countdown`. Let's check their common words:
+
+```{r echo=F}
+#merged_songs[which(merged_songs$song == "Woman"), ] # Row nr 137
+#merged_songs[which(merged_songs$song == "The Final Countdown"), ] # row nr 92
+
+    vocab.cmp.table = t(as.matrix(doc.term.mat[c(92, 137),]))
+
+    vocab.cmp.table = vocab.cmp.table[rowSums(vocab.cmp.table != 0) > 0, ]
+    vocab.cmp.table = cbind(seq(nrow(vocab.cmp.table)), vocab.cmp.table)
+kable(vocab.cmp.table, caption="\\label{tab:table6} Document term matrix comparing term occurrence",
+      col.names = c("i", "Woman", "The Final Countdown"),
+      align=rep('c', 3))
+```
+
+We can see that these two songs have present 23 out of 56 terms, which is almost half of them. The term `leav` is present many times in both songs, which is probably what has related them.
+
+However, we are aware that these two songs are about very different topics, so their similarity is only based text-wise without any context. 
+
+
+Let's check another example and  compare the lyrics of  `Ocean Colour Scene - How About You` and `Pet Shop Boys - All Over The World`. Their common words are:
+
+```{r echo=F}
+#merged_songs[which(merged_songs$song == "All Over The World"), ] # Row nr 142
+#merged_songs[which(merged_songs$song == "How About You"), ] # row nr 141
+
+    vocab.cmp.table = t(as.matrix(doc.term.mat[c(141, 142),]))
+
+    vocab.cmp.table = vocab.cmp.table[rowSums(vocab.cmp.table != 0) > 0, ]
+    vocab.cmp.table = cbind(seq(nrow(vocab.cmp.table)), vocab.cmp.table)
+kable(vocab.cmp.table, caption="\\label{tab:table7} Document term matrix comparing term occurrence",
+      col.names = c("i", "How About You", "All Over The World"),
+      align=rep('c', 3))
+```
+
+In this case, we can see that they have 18/56 terms present. `How about you` is very centered on `know`ing something, whereas this word does not appear in `All Over The World`. However, we can see that the word `world` appears 5 and 4 times respectively. This is probably why this two songs were linked.
+
+Again, however, their songs' topics are not related.
+
 # Conclusions & future work
 
 Choosing the Linking Threshold as well as the minimum Term Appearance ratio have been very challenging for us so that we ended up with a desirable graph. This being a somewhat connected graph using a reasonable threshold so that we would not end up with a fully connected graph or close to it.
@@ -230,3 +332,14 @@ Thus, for future work we would propose searching for a not-as-straightforward me
 
 We are aware that not discerning between nodes having a greater similarity than others
 is contraproductive for us and our study. However, because of the time limit we had we have not been able to come up with a better solution. 
+
+We have also noticed while checking some communities found that many songs are unrelated in terms of what the songs are about. However, an adjacency has been added to them because we are treating each term independently of context in the tf-idf method. This method treats each lyrics' terms as a *Bag of Words*. In other words, it only matters to us that the word appears in both songs regardless of the context or topic.
+
+A famous example on how this *Bag of Words* works with tf-idf and cosine similarity, is that if we were to compare two songs with their lyrics being:
+
+- `The dog bit the man`
+- `The man bit the dog`
+
+Their cosine similarity would be 1, and thus we would be linking their songs. However, these two sentences have very different meaning and maybe should not be related.
+
+This is why we have concluded that probably this is not the best approach on linking songs by their lyrics, and maybe it would be better to use some method from Natural Language Processing to choose whether to relate two songs or not.

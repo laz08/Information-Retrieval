@@ -144,6 +144,49 @@ computeMetrics <- function(graph, communityMethod){
     return(res)
 }
 
+
+
+computeCommunitySpecifications <- function(graph, communityMethod){
+    
+    n <- length(V(graph))
+    
+    numSubComm <- max(communityMethod$membership)
+    verticesMembership <- communityMethod$membership
+    verticesPos <- seq(n)
+    
+    numSubComSeq <- seq(numSubComm)
+    ns = c()
+    ms = c()
+    ks = c()
+    deltas = c()
+    ds = c()
+
+    for(subGIdx in seq(numSubComm)){
+        # Take the vertices on that subcommunity
+        vOfSubComm <- verticesPos[verticesMembership == subGIdx]
+        # Create subgraph of subcommunity subGIdx
+        subG = induced_subgraph(graph, vids = vOfSubComm)
+        mc <- length(E(subG))
+        nc <- length(V(subG))
+    
+        k = 2*mc/nc
+        delta = 2*mc/(nc * (nc-1))
+        diameter = diameter(subG, directed = FALSE, unconnected = TRUE, weights = NULL)
+        
+        # Appends...
+        ns = append(ns, nc)
+        ms = append(ms, mc)
+        ks = append(ks, k)
+        deltas = append(deltas, delta)
+        ds = append(ds, diameter)
+    }
+    
+    res <- data.frame(Comm = numSubComSeq, N = ns, E = ms, K = ks, delta = deltas, diameter = ds)
+    return(res)
+}
+
+
+
 plotGraphSetOfCommunities <- function(communities, graph, vecToShow) {
   
   #par(mfrow=c(1,2))
