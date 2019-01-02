@@ -10,8 +10,7 @@ with open("groceries.csv") as f:
   for line in f:
     text = []    
     for word in line.strip().split(','):
-      #word = decode(word.strip(),'latin2','ignore')
-      #print(word)
+      word = decode(word.strip(),'latin2','ignore')
       text.append(word)
     d = {}
     d['content'] = text

@@ -3,28 +3,47 @@ from pymongo import MongoClient
 conn = MongoClient()
 db = conn.foo
 
-total = None
-
+# Standalone, deprecated
 def confidence(pair1, pair2):
     key = pair1 + "+" + pair2
-    return(db.counts.find_one({"_id":key})['value']/db.counts.find_one({"_id":pair1})['value'])
+    return(db.pair_counts.find_one({"_id":key})['value']/db.single_counts.find_one({"_id":pair1})['value'])
 
-def support(pair1, pair2):
+def support(pair1, pair2, total):
     key = pair1 + "+" + pair2
-    return(db.counts.find_one({"_id":key})['value']/total)
+    return(db.pair_counts.find_one({"_id":key})['value']/total)
 
-def countTotal():
-    t = 0
-    docs = db.counts.find()
-    for doc in docs:
-        if(doc['_id'].find('+') != -1):
-            t = t + 1
 
-    return(t)
+# New, faster version
+def confidenceFromPair(pair):
+    pairName = pair['_id']
+    pairOccurrences = pair['value']
+    
+    items = pairName.split('+')
+    item1 = items[0]
+    # item2 = items[1]
 
-total = countTotal()
+    firstTermOccurrences = db.single_counts.find_one({"_id":item1})['value']
+    return(pairOccurrences/firstTermOccurrences)
 
-print(confidence("soda","chocolate"))
-print(support("soda","chocolate"))
+def supportFromPair(pair, total):
+    return((pair['value']/total) * 100)
 
-#TODO: find all pairs that respect thresholds. !!!NOTE!!! pairs are counted twice, meaning that both (bread, soda) and (soda, bread) exist!
+def computeAllConfidenceAndSupport(db, total):
+    allPairs = db.pair_counts.find()
+
+    print(allPairs[1])
+
+    confidence = {}
+    support = {}
+
+    for pair in allPairs:
+        pairName = pair['_id']
+        items = pairName.split('+')
+        print("items {}".format(items))
+        item1 = items[0]
+        item2 = items[1]
+
+        confidence[pairName] = confidenceFromPair(pair)
+        support[pairName] = supportFromPair(pair, total)
+
+    return(confidence, support)
