@@ -10,13 +10,12 @@ def confidenceFromPair(pair):
     
     items = pairName.split('+')
     item1 = items[0]
-    # item2 = items[1]
 
     firstTermOccurrences = db.single_counts.find_one({"_id":item1})['value']
     return(pairOccurrences/firstTermOccurrences)
 
 def supportFromPair(pair, total):
-    return((pair['value']/total) * 100)
+    return((pair['value']/total))
 
 def computeAllConfidenceAndSupport(db, total):
     allPairs = db.pair_counts.find()
