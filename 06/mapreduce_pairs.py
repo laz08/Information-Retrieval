@@ -77,8 +77,8 @@ def printThresholdTable(confidence, support, rowsToPrint):
                         (0.20, 0.25),
                         (0.50, 0.25)]
 
-
   keys = confidence.keys()
+  print(len(keys))
   rowCtr = 0
   for supMin, confMin in tableRowsSupConf:
     
@@ -86,9 +86,13 @@ def printThresholdTable(confidence, support, rowsToPrint):
     
     ctr = 0           # Nr. of elements that comply with the rules
     rowElements = []  # Elements that comply with the rules
-    
     for pair in keys:
-      if(confidence[pair] >= confMin and support[pair] >= supMin):
+      if(float(confidence[pair]) > float(confMin) and float(support[pair]) > float(supMin)):
+        if(ctr < 5 and rowCtr == 1):
+          print(pair)
+          print(confidence[pair])
+          print(support[pair])
+
         ctr += 1
         if(rowCtr in rowsToPrint):
           #rowElements.append(pair)
@@ -106,12 +110,8 @@ def main():
     mapReduceCounters(db)
 
     print("Total items: {}".format(totalTransactions))
-
-    print("Confidence (soda, chocolate): {}".format(confidence("soda","chocolate")))
-    print("Support (soda, chocolate): {}".format(support("soda","chocolate", totalTransactions)))
-
+    
     conf, supp = computeAllConfidenceAndSupport(db, totalTransactions)
-    #print(conf)
 
     rowElementsToPrint = [4, 5, 6]
     printThresholdTable(conf, supp, rowElementsToPrint)
