@@ -8,6 +8,8 @@ FILENAME = "groceries.csv"
 
 def dropPreviousDatabase(db):
     db.corpus.drop()
+    db.pair_counts.drop()
+    db.single_counts.drop()
     print("Previous database dropped.")
 
 def insertDatabaseData(db, filename):
@@ -64,6 +66,36 @@ def mapReduceCounters(db):
     r = db.corpus.map_reduce(pairs_mapper, reducer, "pair_counts")
     r2 = db.corpus.map_reduce(single_mapper, reducer, "single_counts")
 
+def printThresholdTable(confidence, support, rowsToPrint):
+    
+  tableRowsSupConf = [(0.01, 0.01),
+                        (0.01, 0.25),
+                        (0.01, 0.50),
+                        (0.01, 0.75),
+                        (0.05, 0.25),
+                        (0.07, 0.25),
+                        (0.20, 0.25),
+                        (0.50, 0.25)]
+
+
+  keys = confidence.keys()
+  rowCtr = 0
+  for supMin, confMin in tableRowsSupConf:
+    
+    rowCtr += 1       # Counter to keep track of the rows to print.
+    
+    ctr = 0           # Nr. of elements that comply with the rules
+    rowElements = []  # Elements that comply with the rules
+    
+    for pair in keys:
+      if(confidence[pair] >= confMin and support[pair] >= supMin):
+        ctr += 1
+        if(rowCtr in rowsToPrint):
+          #rowElements.append(pair)
+          pass
+
+    rulesStr = "Row {}, Sup. {}, Conf. {}, Nr. Rules {}, elements: {}".format(rowCtr, supMin, confMin, ctr, rowElements)
+    print(rulesStr)
 
 def main():
     conn = MongoClient()
@@ -79,7 +111,12 @@ def main():
     print("Support (soda, chocolate): {}".format(support("soda","chocolate", totalTransactions)))
 
     conf, supp = computeAllConfidenceAndSupport(db, totalTransactions)
-    print(conf)
+    #print(conf)
+
+    rowElementsToPrint = [4, 5, 6]
+    printThresholdTable(conf, supp, rowElementsToPrint)
+
+
 
 if __name__ == '__main__':
     main()
