@@ -31,17 +31,11 @@ def supportFromPair(pair, total):
 def computeAllConfidenceAndSupport(db, total):
     allPairs = db.pair_counts.find()
 
-    print(allPairs[1])
-
     confidence = {}
     support = {}
 
     for pair in allPairs:
         pairName = pair['_id']
-        items = pairName.split('+')
-        print("items {}".format(items))
-        item1 = items[0]
-        item2 = items[1]
 
         confidence[pairName] = confidenceFromPair(pair)
         support[pairName] = supportFromPair(pair, total)
