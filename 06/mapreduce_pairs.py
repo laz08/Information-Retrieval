@@ -79,7 +79,7 @@ def printThresholdTable(confidence, support, rowsToPrint):
 
   keys = confidence.keys()
 
-  print(len(keys))
+  print("Nr. Association rules found: {}".format(len(keys)))
   rowCtr = 0
   for supMin, confMin in tableRowsSupConf:
     

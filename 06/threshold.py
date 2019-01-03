@@ -3,7 +3,6 @@ from pymongo import MongoClient
 conn = MongoClient()
 db = conn.foo
 
-# New, faster version
 def confidenceFromPair(pair):
     pairName = pair['_id']
     pairOccurrences = pair['value']
